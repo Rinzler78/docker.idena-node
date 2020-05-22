@@ -15,6 +15,7 @@ RUN apt-get install -y wget
 ARG IDENA_NODE_BIN_URL=https://github.com/idena-network/idena-go/releases/download/v0.20.0/idena-node-linux-0.20.0
 RUN wget --output-document=idena-node ${IDENA_NODE_BIN_URL}
 RUN mv idena-node /bin/idena-node
+RUN chmod +x /bin/idena-node
 
 # Expose idena-nodes ports
 EXPOSE 22 40405 9999
@@ -23,3 +24,5 @@ EXPOSE 22 40405 9999
 RUN mkdir /datadir
 VOLUME ["/datadir"]
 COPY config.json /datadir/config.json
+
+CMD ["idena-node --config=/datadir/config.json"]
