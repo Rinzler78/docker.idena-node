@@ -5,7 +5,7 @@ FROM ubuntu:latest
 RUN apt-get update
 
 # Install open-ssh server, Wget
-RUN apt-get install -y openssh-server wget
+RUN apt-get install -y openssh-server wget ntp sudo nano
 
 # Download idena-node
 ARG IDENA_NODE_BIN_URL=https://github.com/idena-network/idena-go/releases/download/v0.20.0/idena-node-linux-0.20.0
