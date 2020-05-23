@@ -3,13 +3,9 @@ FROM ubuntu:latest
 
 # Update Ubuntu Software repository
 RUN apt-get update
-#RUN apt-get -y upgrade
 
-# Install open-ssh server
-RUN apt-get install -y openssh-server
-
-# Install wget
-RUN apt-get install -y wget
+# Install open-ssh server, Wget
+RUN apt-get install -y openssh-server wget
 
 # Download idena-node
 ARG IDENA_NODE_BIN_URL=https://github.com/idena-network/idena-go/releases/download/v0.20.0/idena-node-linux-0.20.0
@@ -23,6 +19,16 @@ EXPOSE 22 40405 9999
 # Volume configuration
 RUN mkdir /datadir
 VOLUME ["/datadir"]
-COPY config.json /datadir/config.json
 
-CMD ["idena-node --config=/datadir/config.json"]
+# Create the ssh user
+ENV IDENA_USER_ACCOUNT_NAME idenaClient
+ENV IDENA_USER_ACCOUNT_PASS idenaClientPassword
+
+# Start script
+COPY startIdena.sh /startIdena.sh
+RUN chmod +x /startIdena.sh
+
+#Start
+#CMD idena-node --config=/datadir/config.json
+CMD /startIdena.sh
+#CMD /bin/bash
