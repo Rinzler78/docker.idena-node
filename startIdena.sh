@@ -13,7 +13,6 @@ else
 fi
 
 service ssh start
-service ntp start
 
 echo "Current date : $(date)"
 
