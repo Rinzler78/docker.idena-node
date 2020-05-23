@@ -9,13 +9,13 @@ if [ ! $(getent passwd $IDENA_USER_ACCOUNT_NAME) ] ; then
     usermod -aG sudo ${IDENA_USER_ACCOUNT_NAME}
 fi
 
-service ssh start
-
 configFile=/datadir/config.json
 
 if [ ! -f "$configFile" ]; then
     echo "Creating $configFile"
     echo '{ "IpfsConf": { "Profile": "server" } }' > /datadir/config.json
 fi
+
+service ssh start
 
 idena-node --config=/datadir/config.json
