@@ -1,17 +1,8 @@
 #Download base image ubuntu 16.04
 FROM ubuntu:latest
 
-# Update Ubuntu Software repository
-RUN apt-get update
-
 # Install open-ssh server, Wget
-RUN apt-get install -y openssh-server wget
-
-# Download idena-node
-ARG IDENA_NODE_BIN_URL=https://github.com/idena-network/idena-go/releases/download/v0.20.0/idena-node-linux-0.20.0
-RUN wget --output-document=idena-node ${IDENA_NODE_BIN_URL}
-RUN mv idena-node /bin/idena-node
-RUN chmod +x /bin/idena-node
+RUN apt-get update && apt-get -y upgrade && apt-get install -y openssh-server wget curl
 
 # Expose idena-nodes ports
 EXPOSE 22 40405 9999
