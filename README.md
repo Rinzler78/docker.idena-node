@@ -1,36 +1,53 @@
-# Purpose
-This sources allow to create and start dedicated idena-node docker container.
+## Table of contents
+* [Purpose](#purpose)
+* [docker creation](#docker-creation)
+  * [dockerFile](#dockerfile)
+  * [Build instructions](#build-instructions)
+  * [Before run](#before-run)
+  * [Run instructions](#run-instructions)
+  * [Public docker image](#public-docker-image)
+* [Synology nas docker deployment](#synology-nas-docker-deployment)
+  * [Install docker](#install-docker)
+  * [Search idena-node image](#search-idena-node-image)
+  * [Create datadir directory](#create-datadir-directory)
+  * [Api key](#api-key)
+  * [Existing node datas](#existing-node-datas)
+  * [Configure image and start container](#configure-image-and-start-container)
+
+## Purpose
+This sources allow to create docker image contains all necessary components to run idena-node.
 
 For more informations on the idena project lets go to => https://idena.io/
 
-# DockerFile
-## Base container
+## docker creation
+### dockerFile
+#### Base container
 This container is based on an ubuntu:latest.
 
-## Packages
+#### Packages
 Following packages are installed : 
  - wget => Allow to download the idena-node binary from github link => https://github.com/idena-network/idena-go/releases
  - openssh-server => Allow client connection to the node through ssh.
 
-## idena-node installation
+#### idena-node installation
 idena-node binary is downloaded, put at /bin/idena-node and make executable.
 
-## Exposed ports
+#### Exposed ports
 Following ports are exposed : (https://idena.io/?view=guide#guide-remote-1)
  - 22
  - 40405
  - 9999
 
-## Volumes
+#### Volumes
 datadir directory is created at root directory => /datadir.
 
 It must be linked to directory outside the container.
 
-## Environments variables
+#### Environments variables
  - IDENA_USER_ACCOUNT_NAME : Contains account name that will be created to allow ssh connection.
  - IDENA_USER_ACCOUNT_PASS : Contains the acccount password.
 
-## Start script
+#### Start script
 startIdena.sh file is a bash script called at container startup.
 It performs following actions : 
  - Create the ssh user IDENA_USER_ACCOUNT_NAME (With IDENA_USER_ACCOUNT_PASS password) if its not exists.
@@ -38,20 +55,20 @@ It performs following actions :
  - Start ssh service, to allow connection through ssh.
  - Start idena-node binary
 
-# Build instruction
+### Build instructions
 docker build -t idena-node . 
 
-# Before run
-## datadir directory
+### Before run
+#### datadir directory
 Create a directory on your docker host to be linked to the container datadir. Exemple : ~/MyDockers/idena-node/datadir
 
-## Api.key
+#### Api key
 Copy your api.key into the datadir directory. Exemple : ~/MyDockers/idena-node/datadir/api.key
 
-## Existing node datas
+#### Existing node datas
 In case your allready using idena-node (locally or in a VPS), and you want to use the docker, just copy all files and directories from your current datadir to the datadir created on your docker host.
 
-# Run instructions
+### Run instructions
 docker run -d \
 -p {SshPort}:22 \
 -p 40405:40405 \
@@ -79,27 +96,28 @@ docker run -d \
 -e IDENA_USER_ACCOUNT_PASS=idenaUserPassword \
 --name idena-node idena-node
 
-# Docker public container
+### Public docker image
 Public container is available at https://hub.docker.com/repository/docker/rinzlerfr/idena-node
 
-# Synology idena-node docker installation
-## Install docker
+
+## Synology nas docker deployment
+### Install docker
 if not installed, go to the package center, search docker and install it.
 
-## Search idena-node image
+### Search idena-node image
 Go to docker GUI and search "rinzlerfr/idena-node" in the register page.
 Once found download it.
 
-## Create datadir directory
+### Create datadir directory
 Using File station, create a directory on your syno to link to the container datadir. Exemple : docker/idena-node/datadir
 
-## Api.key
+### Api.key
 Copy your api.key into the datadir directory. Exemple : docker/idena-node/datadir/api.key
 
-## Existing node datas
+### Existing node datas
 In case your allready using idena-node (locally or in a VPS), and you want to use the docker, just copy all files and directories, from your current datadir, to the datadir created on your syno.
 
-## Configure image and start container
+### Configure image and start container
 Back to docker GUI, in Images. Select the "rinzlerfr/idena-node" image, and click launch.
 - Give a name to your container. Exemple : idena-node
 - Enable resources limitation : 
