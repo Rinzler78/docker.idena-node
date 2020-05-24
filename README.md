@@ -14,10 +14,13 @@
   * [Existing node datas](#existing-node-datas)
   * [Configure image and start container](#configure-image-and-start-container)
 
+
 ## Purpose
 This sources allow to create docker image contains all necessary components to run idena-node.
 
 For more informations on the idena project lets go to => https://idena.io/
+Downloads and client installation are available at => https://idena.io/?view=download#
+
 
 ## docker creation
 ### dockerFile
@@ -119,7 +122,7 @@ In case your allready using idena-node (locally or in a VPS), and you want to us
 ### Configure image and start container
 Back to docker GUI, in Images. Select the "rinzlerfr/idena-node" image, and click launch.
 - Give a name to your container. Exemple : idena-node
-- Enable resources limitation : 
+- Enable resources limitation (optional) : 
 -- Put processor priority to high.
 -- Put 1024 MB limitation
 - Click to advanced parameters
