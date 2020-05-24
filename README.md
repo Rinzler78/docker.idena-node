@@ -19,6 +19,7 @@
 This sources allow to create docker image contains all necessary components to run idena-node.
 
 For more informations on the idena project lets go to => https://idena.io/
+
 Downloads and client installation are available at => https://idena.io/?view=download#
 
 
@@ -43,7 +44,6 @@ Following ports are exposed : (https://idena.io/?view=guide#guide-remote-1)
 
 #### Volumes
 datadir directory is created at root directory => /datadir.
-
 It must be linked to directory outside the container.
 
 #### Environments variables
