@@ -56,6 +56,7 @@ It performs following actions :
  - Create the ssh user IDENA_USER_ACCOUNT_NAME (With IDENA_USER_ACCOUNT_PASS password) if its not exists.
  - Create config.json file in /datadir, if not exist.
  - Start ssh service, to allow connection through ssh.
+ - Check for newer version of idena-node at https://github.com/idena-network/idena-go/releases/latest
  - Start idena-node binary
 
 ### Build instructions
