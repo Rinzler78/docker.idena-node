@@ -69,6 +69,7 @@ Copy your api.key into the datadir directory. Exemple : ~/MyDockers/idena-node/d
 In case your allready using idena-node (locally or in a VPS), and you want to use the docker, just copy all files and directories from your current datadir to the datadir created on your docker host.
 
 ### Run instructions
+docker run command is : 
 docker run -d \
 -p {SshPort}:22 \
 -p 40405:40405 \
@@ -78,13 +79,11 @@ docker run -d \
 -e IDENA_USER_ACCOUNT_PASS={User Account Password} \
 --name idena-node idena-node
 
--- {SshPort} => SSH port to open
-
--- {Your directory} => Your datadir directory on the docker host
-
--- {User Account} => The ssh user account used to connect client to node
-
--- {User Account Password} => The ssh user account password.
+Where : 
+ - {SshPort} => SSH port to open
+ - {Your directory} => Your datadir directory on the docker host
+ - {User Account} => The ssh user account used to connect client to node
+ - {User Account Password} => The ssh user account password.
 
 Exemple : 
 docker run -d \
