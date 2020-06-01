@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Install open-ssh server, Wget
-RUN apt-get update && apt-get -y upgrade && apt-get install -y openssh-server wget curl
+RUN apt-get update && apt-get -y upgrade && apt-get install -y openssh-server wget curl htop
 
 # Expose idena-nodes ports
 EXPOSE 22 40405 9999
@@ -15,9 +15,13 @@ VOLUME ["/datadir"]
 ENV IDENA_USER_ACCOUNT_NAME idenaClient
 ENV IDENA_USER_ACCOUNT_PASS idenaClientPassword
 
+# Update script
+COPY update.sh /update.sh
+RUN chmod +x /update.sh
+
 # Start script
-COPY startIdena.sh /startIdena.sh
-RUN chmod +x /startIdena.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 #Start
-CMD /startIdena.sh
+CMD /start.sh

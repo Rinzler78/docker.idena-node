@@ -32,6 +32,7 @@ This container is based on an ubuntu:latest.
 Following packages are installed : 
  - wget => Allow to download the idena-node binary from github link => https://github.com/idena-network/idena-go/releases
  - openssh-server => Allow client connection to the node through ssh.
+ - curl and wget => Update idena-node
 
 #### idena-node installation
 idena-node binary is downloaded, put at /bin/idena-node and make executable.
