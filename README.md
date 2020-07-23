@@ -13,6 +13,7 @@
   * [Api key](#api-key)
   * [Existing node datas](#existing-node-datas)
   * [Configure image and start container](#configure-image-and-start-container)
+* [Support]
 
 
 ## Purpose
@@ -143,6 +144,9 @@ Back to docker GUI, in Images. Select the "rinzlerfr/idena-node" image, and clic
 -- Replace idenaClientPassword by the desired password of the account.
 
 Then validate and launch the container.
+
+## Support
+Please consider donating to 0x3fc4e0d8dcc6d767eb5381abe89f52cad874a8e5 if you are satisfied
 
 Hav fun !! ;)
 
