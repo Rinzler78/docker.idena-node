@@ -7,6 +7,10 @@ currentReleaseUrl=$(curl --silent  https://api.github.com/repos/idena-network/id
 remoteVersion="$(basename $currentReleaseUrl)"
 echo "Remote version : $remoteVersion"
 
+if [ -z "$remoteVersion" ];then
+    echo "Fail to retrieve remote version"
+fi
+
 # Current version
 versionFile=version
 currentVersion=""
@@ -16,7 +20,7 @@ if [ -f $versionFile ]; then
     echo "Current version : $currentVersion"
 fi
 
-if [ "$remoteVersion" != "$currentVersion" ]; then
+if [ ! -z "$remoteVersion" ] && [ "$remoteVersion" != "$currentVersion" ]; then
     echo "Downloading new idena-node version at $currentReleaseUrl"
     wget --output-document=new-idena-node $currentReleaseUrl 2>/dev/null
 

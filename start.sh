@@ -12,6 +12,7 @@ if [ ! -f "$configFile" ]; then
     echo '{ "IpfsConf": { "Profile": "server" } }' > /datadir/config.json
 fi
 
+./update-dist.sh
 ./update.sh
 
 service ssh start

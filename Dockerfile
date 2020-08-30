@@ -15,6 +15,10 @@ VOLUME ["/datadir"]
 ENV IDENA_USER_ACCOUNT_NAME idenaClient
 ENV IDENA_USER_ACCOUNT_PASS idenaClientPassword
 
+# Update distro script
+COPY update-dist.sh /update-dist.sh
+RUN chmod +x /update-dist.sh
+
 # Update script
 COPY update.sh /update.sh
 RUN chmod +x /update.sh
