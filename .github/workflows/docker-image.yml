@@ -2,9 +2,10 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    tags:
+      - 'v*' # Pushed tags starting with 'v' (e.g., v1.0.0)
+    branches:
+      - master
 
 jobs:
 
@@ -23,5 +24,8 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag rinzlerfr/idena-node:latest
       
-    - name: Docker Push
+    - name: Docker Push latest
       run: docker push rinzlerfr/idena-node:latest
+
+    - name: Docker Push with tag name
+      run: docker push rinzlerfr/idena-node:${{ github.ref }}
