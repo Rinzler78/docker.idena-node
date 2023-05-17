@@ -1,8 +1,8 @@
 idenaNodeBinaryPath=/bin/idena-node
 
 # Remote version
-echo "Retrieving idena-node remote version"
-currentReleaseUrl=$(curl --silent  https://api.github.com/repos/idena-network/idena-go/releases/latest | grep 'browser_download_url' | grep linux | sed -E 's/.*"([^"]+)".*/\1/')
+echo "Retrieving idena-node remote version ..."
+currentReleaseUrl=$(curl --silent  https://api.github.com/repos/idena-network/idena-go/releases/latest | grep -m 1 'browser_download_url' | grep linux | sed -E 's/.*"([^"]+)".*/\1/')
 
 remoteVersion="$(basename $currentReleaseUrl)"
 echo "Remote version : $remoteVersion"
@@ -27,7 +27,7 @@ if [ ! -z "$remoteVersion" ] && [ "$remoteVersion" != "$currentVersion" ]; then
     if [ -f new-idena-node ]; then
         chmod +x new-idena-node
         mv new-idena-node $idenaNodeBinaryPath
-        echo "$remoteVersion" > version
+        echo "$remoteVersion" > $versionFile
     else
         echo "download failed"
     fi

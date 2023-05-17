@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Install open-ssh server, Wget
-RUN apt-get update && apt-get -y upgrade && apt-get install -y apt-utils openssh-server wget curl htop
+RUN apt-get update && apt-get -y upgrade && apt-get install -y apt-utils openssh-server wget curl htop dialog
 
 # Expose idena-nodes ports
 EXPOSE 22 40405 9999
