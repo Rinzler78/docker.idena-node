@@ -23,11 +23,12 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag rinzlerfr/idena-node:latest
       
-    - name: Docker Push latest
-      run: docker push rinzlerfr/idena-node:latest
-
-    - name: Docker Push with tag name
-      run: docker push rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
+    - name: Build and push Docker image with tag
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: |
+          rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
+          rinzlerfr/idena-node:latest
