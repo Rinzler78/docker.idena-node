@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*' # Pushed tags starting with 'v' (e.g., v1.0.0)
-    branches:
-      - master
 
 jobs:
 
