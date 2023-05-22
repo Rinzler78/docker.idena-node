@@ -23,13 +23,6 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        
-    - name: Build and export to Docker
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        load: true
-        tags: quick-test
           
     - name: Quick Test
       run: |
