@@ -15,10 +15,10 @@ if [ ! -f "$configFile" ]; then
 fi
 
 # Update distro
-./update-dist.sh
+update-dist.sh
 
 # Update packages
-./update.sh
+update.sh
 
 # Start ssh server
 service ssh start

@@ -29,9 +29,6 @@ RUN chmod +x $TOOLS_DIRECTORY/*.sh
 # Update distro script
 RUN update-dist.sh
 
-# Update script
-RUN chmod +x update.sh
-
 # Embed idena node binary
 RUN update.sh
 
