@@ -29,10 +29,11 @@ jobs:
       with:
         context: .
         load: true
-        tags: ${{ env.TEST_TAG }}
+        tags: quick-test
           
     - name: Quick Test
-      run: docker run --env RUN_TIMEOUT=3 --rm ${{ env.TEST_TAG }}
+      run: |
+        docker run --env RUN_TIMEOUT=3 --rm quick-test
       
     - name: Build and push Docker image with tag
       uses: docker/build-push-action@v2
