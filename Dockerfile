@@ -15,16 +15,16 @@ VOLUME ["/datadir"]
 ENV IDENA_USER_ACCOUNT_NAME idenaClient
 ENV IDENA_USER_ACCOUNT_PASS idenaClientPassword
 
-# Tools
-ENV TOOLS_DIRECTORY /tools
+# Running timeout : Default 24H
+ENV RUN_TIMEOUT 86400
 
 # Update PATH
-ENV PATH $TOOLS_DIRECTORY:$PATH
+ENV PATH /tools:$PATH
 
 ## Tools
-RUN mkdir $TOOLS_DIRECTORY
-COPY tools/*.* $TOOLS_DIRECTORY/
-RUN chmod +x $TOOLS_DIRECTORY/*.sh
+RUN mkdir /tools
+COPY tools/*.* /tools/
+RUN chmod +x /tools/*.sh
 
 # Update distro script
 RUN update-dist.sh

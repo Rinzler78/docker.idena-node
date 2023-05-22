@@ -17,16 +17,12 @@ fi
 # Update distro
 update-dist.sh
 
-# Update packages
+# Update node
 update.sh
 
 # Start ssh server
 service ssh start
 
 # Start node
-if [ -f $idenaNodeBinaryPath ]; then
-    echo "Starting idena-node"
-    idena-node --config=$configFile
-else
-    echo "Missing idena-node"
-fi
+echo "Starting idena-node for ${RUN_TIMEOUT}s..."
+timeout "${RUN_TIMEOUT}s" idena-node --config=$configFile

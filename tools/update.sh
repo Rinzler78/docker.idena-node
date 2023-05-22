@@ -4,7 +4,8 @@ idenaNodeBinaryPath=/bin/idena-node
 
 # Remote version
 echo "Retrieving idena-node remote version ..."
-remoteVersion="$(version.remote.sh)"
+latestReleaseUrl=$(url.latest.sh)
+remoteVersion="$(basename $latestReleaseUrl)"
 
 echo "Remote version : $remoteVersion"
 
@@ -14,18 +15,20 @@ fi
 
 # Current version
 currentVersion="$(version.local.get.sh)"
+echo "Current version : $currentVersion"
 
-if [ ! -z "$remoteVersion" ] && [ "$remoteVersion" != "$currentVersion" ]; then
-    currentReleaseUrl=$(cat url.releases.txt)
-    tmpFilename=idena-node
+if [ -z "$remoteVersion" ] || [ "$remoteVersion" != "$currentVersion" ]; then
+    tmpFilename=tmp.idena-node
 
-    echo "Downloading $remoteVersion at $currentReleaseUrl"
-    wget --output-document=$tmpFilename $currentReleaseUrl 2>/dev/null
+    echo "Downloading $remoteVersion at $latestReleaseUrl ..."
+    wget --output-document=$tmpFilename $latestReleaseUrl 2>/dev/null
 
     if [ -f $tmpFilename ]; then
         chmod +x $tmpFilename
+
+        echo "Moving $tmpFilename to $idenaNodeBinaryPath ..."
         mv $tmpFilename $idenaNodeBinaryPath
-        rm $tmpFilename
+
         version.local.set.sh "$remoteVersion"
     else
         echo "download failed"
