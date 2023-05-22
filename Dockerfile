@@ -15,21 +15,17 @@ VOLUME ["/datadir"]
 ENV IDENA_USER_ACCOUNT_NAME idenaClient
 ENV IDENA_USER_ACCOUNT_PASS idenaClientPassword
 
+COPY *.sh /
+RUN chmod +x /*.sh
+
 # Update distro script
-COPY update-dist.sh /update-dist.sh
-RUN chmod +x /update-dist.sh
 RUN /update-dist.sh
 
 # Update script
-COPY update.sh /update.sh
 RUN chmod +x /update.sh
 
 # Embed idena node binary
 RUN /update.sh
-
-# Start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
 
 #Start
 CMD /start.sh
