@@ -1,10 +1,11 @@
+#!/bin/bash
+
 idenaNodeBinaryPath=/bin/idena-node
 
 # Remote version
 echo "Retrieving idena-node remote version ..."
-currentReleaseUrl=$(curl --silent  https://api.github.com/repos/idena-network/idena-go/releases/latest | grep -m 1 'browser_download_url' | grep linux | sed -E 's/.*"([^"]+)".*/\1/')
+remoteVersion="$(./version.remote.sh)"
 
-remoteVersion="$(basename $currentReleaseUrl)"
 echo "Remote version : $remoteVersion"
 
 if [ -z "$remoteVersion" ];then
@@ -12,22 +13,20 @@ if [ -z "$remoteVersion" ];then
 fi
 
 # Current version
-versionFile=version
-currentVersion=""
-
-if [ -f $versionFile ]; then
-    currentVersion="$(cat $versionFile)"
-    echo "Current version : $currentVersion"
-fi
+currentVersion="$(./version.local.get.sh)"
 
 if [ ! -z "$remoteVersion" ] && [ "$remoteVersion" != "$currentVersion" ]; then
-    echo "Downloading new idena-node version at $currentReleaseUrl"
-    wget --output-document=new-idena-node $currentReleaseUrl 2>/dev/null
+    currentReleaseUrl=$(cat ./url.releases.txt)
+    tmpFilename=idena-node
 
-    if [ -f new-idena-node ]; then
-        chmod +x new-idena-node
-        mv new-idena-node $idenaNodeBinaryPath
-        echo "$remoteVersion" > $versionFile
+    echo "Downloading $remoteVersion at $currentReleaseUrl"
+    wget --output-document=$tmpFilename $currentReleaseUrl 2>/dev/null
+
+    if [ -f $tmpFilename ]; then
+        chmod +x $tmpFilename
+        mv $tmpFilename $idenaNodeBinaryPath
+        rm $tmpFilename
+        ./version.local.set.sh "$remoteVersion"
     else
         echo "download failed"
     fi
