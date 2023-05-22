@@ -23,6 +23,9 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+    - name: Test
+      run: bash ${GITHUB_WORKSPACE}/quick_test.sh
       
     - name: Build and push Docker image with tag
       uses: docker/build-push-action@v2
