@@ -23,9 +23,16 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-
-    - name: Test
-      run: bash ${GITHUB_WORKSPACE}/quick_test.sh
+        
+    - name: Build and export to Docker
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        load: true
+        tags: ${{ env.TEST_TAG }}
+          
+    - name: Quick Test
+      run: docker run --env RUN_TIMEOUT=3 --rm ${{ env.TEST_TAG }}
       
     - name: Build and push Docker image with tag
       uses: docker/build-push-action@v2
