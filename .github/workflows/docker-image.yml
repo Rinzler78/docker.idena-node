@@ -33,14 +33,7 @@ jobs:
     
     - name: Quick Test
       run: |
-        docker run --env RUN_TIMEOUT=3 --rm rinzlerfr/idena-node:quicktest
-        returnedCode=$?
-
-        if [ $returnedCode -eq 124 ]; then
-            exit 0
-        fi
-
-        exit $returnedCode
+        ./quick_test.sh rinzlerfr/idena-node:quicktest
     
     - name: docker push
       run: |
