@@ -26,9 +26,9 @@ jobs:
     
     - name: docker build
       run: |
-        docker build -t idena-node . |
-        --tag rinzlerfr/idena-node:quicktest |
-        --tag rinzlerfr/idena-node:latest |
+        docker build -t idena-node . \
+        --tag rinzlerfr/idena-node:quicktest \
+        --tag rinzlerfr/idena-node:latest \
         --tag rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
     
     - name: Quick Test
