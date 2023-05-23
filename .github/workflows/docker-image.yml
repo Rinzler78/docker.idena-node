@@ -23,16 +23,19 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-          
+    
+    - name: docker build
+      run: |
+        docker build -t idena-node . |
+        --tag rinzlerfr/idena-node:quicktest |
+        --tag rinzlerfr/idena-node:latest |
+        --tag rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
+    
     - name: Quick Test
       run: |
-        bash ./quick_test.sh
-      
-    - name: Build and push Docker image with tag
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: |
-          rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
-          rinzlerfr/idena-node:latest
+        docker run --env RUN_TIMEOUT=3 --rm rinzlerfr/idena-node:quicktest
+    
+    - name: docker push
+      run: |
+        docker push rinzlerfr/idena-node:latest
+        docker push rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
