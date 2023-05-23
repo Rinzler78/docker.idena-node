@@ -37,5 +37,5 @@ jobs:
     
     - name: docker push
       run: |
-        docker push rinzlerfr/idena-node:latest
         docker push rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
+        docker push rinzlerfr/idena-node:latest
