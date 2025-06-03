@@ -3,13 +3,13 @@
 [![Docker Hub](https://img.shields.io/docker/pulls/rinzlerfr/idena-node)](https://hub.docker.com/repository/docker/rinzlerfr/idena-node)
 [![Docker Image Size](https://img.shields.io/docker/image-size/rinzlerfr/idena-node/latest)](https://hub.docker.com/repository/docker/rinzlerfr/idena-node)
 [![Docker Automated build](https://img.shields.io/docker/automated/rinzlerfr/idena-node)](https://hub.docker.com/repository/docker/rinzlerfr/idena-node)
-[![GitHub Stars](https://img.shields.io/github/stars/rinzlerfr/idena-node?style=social)](https://github.com/rinzlerfr/idena-node/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/rinzlerfr/idena-node?style=social)](https://github.com/rinzlerfr/idena-node/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/rinzlerfr/idena-node)](https://github.com/rinzlerfr/idena-node/issues)
-[![GitHub last commit](https://img.shields.io/github/last-commit/rinzlerfr/idena-node)](https://github.com/rinzlerfr/idena-node/commits/main)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/rinzlerfr/idena-node/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/Rinzler78/docker.idena-node?style=social)](https://github.com/Rinzler78/docker.idena-node/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Rinzler78/docker.idena-node?style=social)](https://github.com/Rinzler78/docker.idena-node/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/Rinzler78/docker.idena-node)](https://github.com/Rinzler78/docker.idena-node/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Rinzler78/docker.idena-node)](https://github.com/Rinzler78/docker.idena-node/commits/master)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/Rinzler78/docker.idena-node/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red.svg)](https://github.com/rinzlerfr/idena-node)
+[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red.svg)](https://github.com/Rinzler78/docker.idena-node)
 
 ## Purpose
 
@@ -252,7 +252,7 @@ If you encounter other issues, please open an issue on GitHub or contact support
 
 ## Support
 
-If you need help or want to report a bug, please open an issue on the [GitHub repository](https://github.com/rinzlerfr/idena-node) or contact the maintainer.
+If you need help or want to report a bug, please open an issue on the [GitHub repository](https://github.com/Rinzler78/docker.idena-node) or contact the maintainer.
 
 If you find this project useful, please consider donating to:
 
