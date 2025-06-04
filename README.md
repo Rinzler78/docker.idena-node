@@ -87,6 +87,7 @@ docker run -d \
 > ```sh
 > ssh -L 9999:localhost:9009 idenaUser@<host_ip> -p 60022
 > ```
+> Here, `60022` is just an example: you can replace it with any free port of your choice, as long as you use the same port number in both the `docker run` and the `ssh` command.
 > This is necessary to allow the Idena desktop application to connect to your remote node as if it were local.
 
 **Replace:**
@@ -192,7 +193,7 @@ Use `--restart unless-stopped` in your `docker run` command.
 ## Support
 
 - Open an issue on [GitHub](https://github.com/Rinzler78/docker.idena-node/issues)
-- Contact the maintainer
+- Contact: @Rinzler78 (maintainer)
 
 If you find this project useful, donations are welcome:  
 `0x3fc4e0d8dcc6d767eb5381abe89f52cad874a8e5`
