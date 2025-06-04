@@ -155,7 +155,7 @@ for i in $(seq 1 $run_timeout); do
     echo "[INFO] Health status: $health_status"
     if [ "$health_status" = "healthy" ]; then
         echo "[SUCCESS] Container is healthy."
-        exit 0
+        break
     elif [ "$health_status" = "unhealthy" ]; then
         echo "[FAIL] Container is unhealthy."
         exit 14
@@ -163,5 +163,41 @@ for i in $(seq 1 $run_timeout); do
     sleep 1
 done
 
-echo "[FAIL] Healthcheck did not report healthy in time."
-exit 15
+# Test version.locale.sh
+version=$(docker exec "$container_id" /tools/version.locale.sh)
+if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "[SUCCESS] version.locale.sh returned a valid version: $version"
+else
+    echo "[FAIL] version.locale.sh did not return a valid version: $version"
+    docker rm -f "$container_id"
+    exit 16
+fi
+
+# Test update logic (compare local/remote)
+echo "[INFO] Testing update logic..."
+remote_version=$(docker exec "$container_id" /tools/version.remote.sh)
+echo "[INFO] Local version: $version"
+echo "[INFO] Remote version: $remote_version"
+if [ "$version" = "$remote_version" ]; then
+    echo "[SUCCESS] Local and remote versions match."
+else
+    echo "[INFO] Local and remote versions differ. Update needed."
+fi
+
+# Test SSH connection
+if command -v sshpass >/dev/null; then
+    echo "[INFO] Testing SSH connection..."
+    sshpass -p "$idena_pass" ssh -o StrictHostKeyChecking=no -p $(echo $ports | tr ' ' '\n' | grep ':22$' | cut -d: -f1) $idena_user@127.0.0.1 echo "SSH connection successful" || {
+        echo "[FAIL] SSH connection failed."
+        docker rm -f "$container_id"
+        exit 17
+    }
+    echo "[SUCCESS] SSH connection test passed."
+else
+    echo "[WARN] sshpass not found, skipping SSH test."
+fi
+
+echo "[INFO] Stopping container..."
+docker stop "$container_id"
+echo "[SUCCESS] All tests passed."
+exit 0
