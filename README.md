@@ -15,7 +15,7 @@
 ## Overview
 
 This repository provides a ready-to-use Docker image to run an Idena node easily and securely, with SSH access and persistent data storage.
-Utiliser un nœud Idena vous permet de participer activement au réseau Idena, de valider des transactions et de contribuer à la décentralisation. Exécuter votre nœud via Docker simplifie l'installation, la gestion des dépendances et assure un environnement isolé et reproductible.
+Running an Idena node allows you to actively participate in the Idena network, validate transactions, and contribute to decentralization. Running your node via Docker simplifies installation, dependency management, and ensures an isolated and reproducible environment.
 For more information about the Idena project, visit [idena.io](https://idena.io/).
 
 ---
@@ -54,8 +54,8 @@ For more information about the Idena project, visit [idena.io](https://idena.io/
 ```mermaid
 graph TD;
   User["User (SSH client)"] -->|SSH| SSHPort["Host:{SshPort}"]
-  SSHPort -->|Port interne 22 du conteneur| Container["idena-node container"]
-  Container -->|API:9009 (accessible via tunnel SSH)| SSHPort
+  SSHPort -->|Container's internal port 22| Container["idena-node container"]
+  Container -->|API:9009 (accessible via SSH tunnel)| SSHPort
   Container -->|P2P:40405| Network["P2P Network"]
   Container -->|/datadir| Volume["Host Data Directory"]
 ```
@@ -76,7 +76,7 @@ graph TD;
 First, create a directory on your host to persist node data and, if you have one, copy your `api.key` into it:
 ```sh
 mkdir -p ~/MyDockers/idena-node/datadir
-# Si vous avez une clé API existante :
+# If you have an existing API key:
 # cp /path/to/your/api.key ~/MyDockers/idena-node/datadir/api.key
 ```
 
@@ -92,18 +92,18 @@ docker run -d \
   -e IDENA_USER_ACCOUNT_PASS=idenaUserPassword \
   --name idena-node rinzlerfr/idena-node
 ```
-Explications des options :
-- `-d`: Exécute le conteneur en arrière-plan (detached mode).
-- `--restart unless-stopped`: Redémarre automatiquement le conteneur sauf s'il a été explicitement arrêté (par exemple, par `docker stop idena-node`).
+Options explained:
+- `-d`: Runs the container in the background (detached mode).
+- `--restart unless-stopped`: Automatically restarts the container unless it has been explicitly stopped (e.g., by `docker stop idena-node`).
 
 > **Note:**
-> Le mappage du port SSH (`-p 60022:22`) est requis si vous souhaitez vous connecter à votre nœud via SSH, par exemple pour utiliser la redirection de port avec la commande :
+> The SSH port mapping (`-p 60022:22`) is required if you want to connect to your node via SSH, for example to use port forwarding with the command:
 > ```sh
 > ssh -L 9999:localhost:9009 idenaUser@<host_ip> -p 60022
 > ```
-> Ici, `60022` est juste un exemple : vous pouvez le remplacer par n'importe quel port libre de votre choix, tant que vous utilisez le même numéro de port dans les commandes `docker run` et `ssh`. Ceci est nécessaire pour permettre à l'application de bureau Idena de se connecter à votre nœud distant comme s'il était local (l'application se connectera à `http://localhost:9999`).
+> Here, `60022` is just an example: you can replace it with any free port of your choice, as long as you use the same port number in both the `docker run` and `ssh` commands. This is necessary to allow the Idena desktop application to connect to your remote node as if it were local (the application will connect to `http://localhost:9999`).
 >
-> Le mappage `-p 9999:9999` dans la commande `docker run` expose le port API du nœud. Si le service API à l'intérieur du conteneur écoute sur le port `9009` (standard Idena), et que vous souhaitez y accéder directement via `http://<host_ip>:9999` (sans tunnel SSH), vous devriez plutôt utiliser `-p 9999:9009`. Si l'accès se fait *exclusivement* via le tunnel SSH (comme décrit ci-dessus), ce mappage de port direct `-p 9999:9999` (ou `-p 9999:9009`) n'est pas strictement nécessaire pour cette méthode d'accès spécifique, car le tunnel gère la connexion au port `9009` interne du conteneur. Le diagramme d'architecture illustre l'accès API via le port interne `9009` du conteneur, typiquement atteint par le tunnel SSH.
+> The `-p 9999:9999` mapping in the `docker run` command exposes the node's API port. If the API service inside the container listens on port `9009` (Idena standard), and you want to access it directly via `http://<host_ip>:9999` (without an SSH tunnel), you should use `-p 9999:9009` instead. If access is *exclusively* via the SSH tunnel (as described above), this direct port mapping `-p 9999:9999` (or `-p 9999:9009`) is not strictly necessary for this specific access method, as the tunnel handles the connection to the container's internal port `9009`. The architecture diagram illustrates API access via the container's internal port `9009`, typically reached through the SSH tunnel.
 
 **Replace:**
 - `60022` with your desired SSH port
@@ -126,7 +126,7 @@ Create a directory on your host to persist node data (if not already done in Qui
 mkdir -p ~/MyDockers/idena-node/datadir
 cp /path/to/your/api.key ~/MyDockers/idena-node/datadir/api.key
 ```
-Votre `api.key` est généralement trouvée dans le répertoire `datadir` de votre installation Idena existante, ou est générée par le client Idena lors de la première configuration d'un nœud local. Si vous n'en avez pas, le nœud en générera une lors du premier démarrage, mais vous devrez la récupérer depuis le conteneur (par exemple, via SSH) pour l'utiliser avec l'application de bureau.
+Your `api.key` is usually found in the `datadir` directory of your existing Idena installation, or is generated by the Idena client when first setting up a local node. If you don't have one, the node will generate one on its first startup, but you will need to retrieve it from the container (e.g., via SSH) to use it with the desktop application.
 
 ---
 
@@ -151,7 +151,7 @@ To access your remote node API securely from your local Idena desktop app, use S
 ```sh
 ssh -L 9999:localhost:9009 idenaUser@<host_ip> -p 60022
 ```
-(Si l'application Idena Desktop s'exécute sur la même machine que le conteneur Docker, vous pouvez utiliser `localhost` comme `<host_ip>`.)
+(If the Idena Desktop application is running on the same machine as the Docker container, you can use `localhost` as `<host_ip>`.)
 
 Then, in the Idena app, set the node address to:
 `http://localhost:9999`
@@ -169,7 +169,7 @@ Then, in the Idena app, set the node address to:
    docker stop idena-node
    docker rm idena-node
    ```
-3. Run the container again with your previous command. (Assurez-vous d'utiliser exactement les mêmes paramètres `-p`, `-v`, et `-e` que lors du lancement initial pour conserver votre configuration et vos données.)
+3. Run the container again with your previous command. (Make sure to use the exact same `-p`, `-v`, and `-e` parameters as during the initial launch to preserve your configuration and data.)
 
 ---
 
@@ -186,9 +186,9 @@ Then, in the Idena app, set the node address to:
 ---
 
 ## Security Considerations
-- **Mot de passe SSH :** Il est fortement recommandé d'utiliser un mot de passe SSH (`IDENA_USER_ACCOUNT_PASS`) robuste et unique.
-- **Exposition du port SSH :** Considérez attentivement les implications de l'exposition du port SSH de votre conteneur à Internet. Si possible, limitez l'accès à ce port via des règles de pare-feu, en n'autorisant que des adresses IP de confiance.
-- **Clé API :** Protégez votre `api.key`. Ne la partagez pas publiquement.
+- **SSH Password:** It is strongly recommended to use a strong and unique SSH password (`IDENA_USER_ACCOUNT_PASS`).
+- **SSH Port Exposure:** Carefully consider the implications of exposing your container's SSH port to the internet. If possible, limit access to this port via firewall rules, allowing only trusted IP addresses.
+- **API Key:** Protect your `api.key`. Do not share it publicly.
 
 ---
 
@@ -200,7 +200,7 @@ Make sure the ports (SSH port like 60022, Idena P2P 40405, Idena API if directly
 
 ### Permission denied on /datadir
 
-Ensure the Docker user has read/write permissions on the mapped directory. Vous pouvez essayer de corriger les permissions avec `sudo chown -R $(id -u):$(id -g) ~/MyDockers/idena-node/datadir` (adaptez le chemin si nécessaire et assurez-vous que l'utilisateur qui exécute cette commande est celui qui a créé le répertoire ou a les droits sudo) ou assurez-vous que l'utilisateur exécutant Docker a les droits. Sous Windows, vérifiez les paramètres de partage de lecteurs de Docker Desktop.
+Ensure the Docker user has read/write permissions on the mapped directory. You can try to fix permissions with `sudo chown -R $(id -u):$(id -g) ~/MyDockers/idena-node/datadir` (adapt the path if necessary and ensure the user running this command is the one who created the directory or has sudo rights) or ensure the user running Docker has the rights. On Windows, check Docker Desktop's drive sharing settings.
 
 ### Cannot SSH into the container
 
