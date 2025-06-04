@@ -135,54 +135,6 @@ docker_run() {
 }
 
 # --------------------
-# Function: Check port mapping
-# --------------------
-# Arguments: ports_list
-# Returns: 0 if all ports are open, 12 otherwise
-# --------------------
-check_port_mapping() {
-    local ports_list="$1"
-    local all_ok=true
-    for mapping in $ports_list; do
-        port_host=$(echo $mapping | cut -d: -f1)
-        timeout 2 bash -c "</dev/tcp/127.0.0.1/$port_host" 2>/dev/null
-        if [ $? -eq 0 ]; then
-            echo "[INFO] Port $port_host is exposed on host."
-        else
-            echo "[ERROR] Port $port_host is NOT exposed on host."
-            all_ok=false
-        fi
-    done
-    if [ "$all_ok" = true ]; then
-        return 0
-    else
-        return 12
-    fi
-}
-
-# --------------------
-# Function: Test SSH connection
-# --------------------
-# Arguments: port user pass
-# Returns: 0 on success, 13 on failure
-# --------------------
-check_ssh_connect() {
-    local port=$1
-    local user=$2
-    local pass=$3
-    echo "sshpass -p \"***\" ssh -o StrictHostKeyChecking=no -p $port $user@127.0.0.1 echo \"SSH connection successful\""
-    for i in $(seq 1 $run_timeout); do
-        sshpass -p "$pass" ssh -o StrictHostKeyChecking=no -p $port $user@127.0.0.1 echo "SSH connection successful"
-        if [ $? -eq 0 ]; then
-            return 0
-        fi
-        sleep 1
-    done
-    echo "[ERROR] SSH connection failed."
-    return 13
-}
-
-# --------------------
 # Main logic
 # --------------------
 
@@ -196,16 +148,20 @@ if ! docker_run "$image_name" "$ports" "$run_timeout" "$idena_user" "$idena_pass
     exit 11
 fi
 
-if ! check_port_mapping "$ports"; then
-    echo "[FAIL] Port mapping check failed."
-    exit 12
-fi
+# Wait for container healthcheck to report 'healthy'
+echo "[INFO] Waiting for container to become healthy..."
+for i in $(seq 1 $run_timeout); do
+    health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container_id")
+    echo "[INFO] Health status: $health_status"
+    if [ "$health_status" = "healthy" ]; then
+        echo "[SUCCESS] Container is healthy."
+        exit 0
+    elif [ "$health_status" = "unhealthy" ]; then
+        echo "[FAIL] Container is unhealthy."
+        exit 14
+    fi
+    sleep 1
+done
 
-SSH_HOST_PORT=$(echo $ports | tr ' ' '\n' | grep ':22$' | cut -d: -f1)
-if ! check_ssh_connect $SSH_HOST_PORT $idena_user $idena_pass; then
-    echo "[FAIL] SSH connection test failed."
-    exit 13
-fi
-
-echo "[SUCCESS] All tests passed."
-exit 0
+echo "[FAIL] Healthcheck did not report healthy in time."
+exit 15
