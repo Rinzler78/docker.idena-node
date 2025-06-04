@@ -57,8 +57,8 @@ RUN /tools/update.sh
 EXPOSE 22 40405 9999
 
 # Healthcheck for SSH service (will run as root)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD bash -c '</dev/tcp/localhost/22' || exit 1
+HEALTHCHECK --interval=1s --timeout=1s --start-period=1s --retries=60 \
+  CMD bash -c '</dev/tcp/localhost/22 && curl --fail http://localhost:9009/ || exit 1'
 
 # Start command (will run as root, start.sh handles user creation if needed)
 CMD ["/tools/start.sh"]
