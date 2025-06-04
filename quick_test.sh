@@ -3,14 +3,16 @@
 # --------------------
 # Globals & Defaults
 # --------------------
-DEFAULT_IMAGE_NAME="idena-node"
+DEFAULT_IMAGE_NAME="idena-node:latest"
 DEFAULT_USER="idenaClient"
 DEFAULT_PASS="idenaClientPassword"
 DEFAULT_TIMEOUT=120
-DEFAULT_PORTS="2222:22 40405:40405 9999:9999"
+DEFAULT_PORTS="2222:22 40405:40405 9999:9009"
 
 # Parameters (can be overridden by CLI)
-image_name="$DEFAULT_IMAGE_NAME"
+image_name="" # Will be determined by logic below
+image_name_from_flag=""
+image_name_from_positional=""
 idena_user="$DEFAULT_USER"
 idena_pass="$DEFAULT_PASS"
 run_timeout=$DEFAULT_TIMEOUT
@@ -18,13 +20,20 @@ ports="$DEFAULT_PORTS"
 
 container_id=""
 
+# Check for positional image name argument first
+if [[ $# -gt 0 ]] && ! [[ "$1" =~ ^-- ]]; then
+    image_name_from_positional="$1"
+    shift # Consume the positional argument so it's not processed by the option loop
+fi
+
 # --------------------
 # Helper: Print usage
 # --------------------
 print_help() {
-    echo "Usage: $0 [--image IMAGE] [--user USER] [--pass PASS] [--timeout SECONDS] [--ports \"host:cont ...\"]"
+    echo "Usage: $0 [--image_name IMAGE_NAME] [POSITIONAL_IMAGE_NAME] [--user USER] [--pass PASS] [--timeout SECONDS] [--ports \"host:cont ...\"]"
     echo "\nOptions:"
-    echo "  --image     Docker image name (default: $DEFAULT_IMAGE_NAME)"
+    echo "  --image_name Docker image name (default: $DEFAULT_IMAGE_NAME)"
+    echo "  [POSITIONAL_IMAGE_NAME] Positional argument for Docker image name (overridden by --image_name if both are present)"
     echo "  --user      SSH username (default: $DEFAULT_USER)"
     echo "  --pass      SSH password (default: $DEFAULT_PASS)"
     echo "  --timeout   Timeout in seconds (default: $DEFAULT_TIMEOUT)"
@@ -37,8 +46,8 @@ print_help() {
 # --------------------
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --image)
-            image_name="$2"; shift 2;;
+        --image_name) # Renamed from --image
+            image_name_from_flag="$2"; shift 2;;
         --user)
             idena_user="$2"; shift 2;;
         --pass)
@@ -53,6 +62,25 @@ while [[ $# -gt 0 ]]; do
             echo "Unknown option: $1"; print_help; exit 1;;
     esac
 done
+
+# Determine the final image_name based on priority:
+# 1. --image_name flag
+# 2. Positional argument
+# 3. Default image name
+if [ -n "$image_name_from_flag" ]; then
+    image_name="$image_name_from_flag"
+elif [ -n "$image_name_from_positional" ]; then
+    image_name="$image_name_from_positional"
+else
+    image_name="$DEFAULT_IMAGE_NAME"
+fi
+
+# Ensure image_name is set
+if [ -z "$image_name" ]; then
+    echo "[ERROR] Image name could not be determined. Please specify an image or ensure a default is set." >&2
+    print_help >&2 # Show help on error
+    exit 1
+fi
 
 # --------------------
 # Dependency check

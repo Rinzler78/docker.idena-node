@@ -33,7 +33,7 @@ jobs:
     
     - name: Quick Test
       run: |
-        ./quick_test.sh rinzlerfr/idena-node:quicktest
+        ./quick_test.sh --image_name rinzlerfr/idena-node:quicktest
     
     - name: docker push
       run: |
