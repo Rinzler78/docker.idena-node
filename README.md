@@ -55,7 +55,7 @@ For more information about the Idena project, visit [idena.io](https://idena.io/
 graph TD;
   User["User (SSH client)"] -->|SSH| SSHPort["Host:{SshPort}"]
   SSHPort -->|Container's internal port 22| Container["idena-node container"]
-  Container -->|API:9009 (accessible via SSH tunnel)| SSHPort
+  Container -->|"API:9009 (accessible via SSH tunnel)"| SSHPort
   Container -->|P2P:40405| Network["P2P Network"]
   Container -->|/datadir| Volume["Host Data Directory"]
 ```
