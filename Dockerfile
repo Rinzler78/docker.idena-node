@@ -55,7 +55,7 @@ EXPOSE 22 40405 9009
 
 # Healthcheck for SSH service (will run as root)
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
-  CMD bash -c '</dev/tcp/localhost/22'
+  CMD bash -c '</dev/tcp/localhost/22 && </dev/tcp/localhost/9009'
 
 # Start command (will run as root, start.sh handles user creation if needed)
 CMD ["/tools/start.sh"]

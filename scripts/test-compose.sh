@@ -64,4 +64,12 @@ if command -v sshpass >/dev/null 2>&1; then
   log "SSH connectivity test passed."
 fi
 
+log "Testing API port connectivity..."
+api_host_port="${IDENA_API_HOST_PORT:-9999}"
+if timeout 3 bash -c "</dev/tcp/127.0.0.1/${api_host_port}" >/dev/null 2>&1; then
+  log "API port ${api_host_port} is reachable."
+else
+  fail "API port ${api_host_port} is not reachable from the host."
+fi
+
 log "Compose tests completed."
