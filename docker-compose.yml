@@ -1,6 +1,8 @@
 services:
   idena-node:
-    image: rinzlerfr/idena-node:latest
+    image: ${IDENA_IMAGE_NAME:-idena-node:compose-local}
+    build:
+      context: .
     container_name: idena-node
     restart: unless-stopped
     environment:
