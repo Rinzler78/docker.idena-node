@@ -15,6 +15,9 @@ printf '%s\n' "$default_config" | grep -q 'published: "40405"' || fail "Default 
 printf '%s\n' "$default_config" | grep -q 'published: "9999"' || fail "Default API host port is not 9999."
 printf '%s\n' "$default_config" | grep -q 'type: volume' || fail "Default compose storage is not a Docker volume."
 printf '%s\n' "$default_config" | grep -q 'source: idena-node-data' || fail "Default compose volume name is not idena-node-data."
+printf '%s\n' "$default_config" | grep -q 'test:' || fail "Compose healthcheck is missing."
+printf '%s\n' "$default_config" | grep -q '/dev/tcp/localhost/22' || fail "Compose healthcheck does not probe SSH on port 22."
+printf '%s\n' "$default_config" | grep -q '/dev/tcp/localhost/9009' || fail "Compose healthcheck does not probe the API port 9009."
 
 log "Validating docker-compose port overrides..."
 override_config=$(IDENA_USER_ACCOUNT_PASS=test-password IDENA_SSH_HOST_PORT=16022 IDENA_P2P_HOST_PORT=24045 IDENA_API_HOST_PORT=19009 docker compose config)

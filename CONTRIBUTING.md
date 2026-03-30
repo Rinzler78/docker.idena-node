@@ -26,6 +26,17 @@ Additional validation scripts are available when you want more targeted checks:
 ./tests/run_all.sh
 ```
 
+Convenience wrappers are also available:
+
+```sh
+./scripts/build-dockerfile.sh
+./scripts/build-compose.sh
+./scripts/run-dockerfile.sh
+./scripts/run-compose.sh
+./scripts/test-dockerfile.sh
+./scripts/test-compose.sh
+```
+
 The default Compose setup uses the named Docker volume `idena-node-data` for `/datadir`.
 Set `IDENA_USER_ACCOUNT_PASS` in your shell or `.env` file before running `docker compose up`.
 

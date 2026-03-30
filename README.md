@@ -163,6 +163,26 @@ The repository includes dedicated validation scripts:
 - `image_contract_test.sh` checks image metadata, runtime health, and `/tools` script behavior.
 - `run_all.sh` runs the full validation suite, including `quick_test.sh`.
 
+### Helper scripts
+
+The `scripts/` directory provides wrappers for the common workflows:
+
+```sh
+./scripts/build-dockerfile.sh
+./scripts/build-compose.sh
+./scripts/run-dockerfile.sh
+./scripts/run-compose.sh
+./scripts/test-dockerfile.sh
+./scripts/test-compose.sh
+```
+
+- `build-dockerfile.sh` builds the local image from `Dockerfile`.
+- `build-compose.sh` runs `docker compose build`.
+- `run-dockerfile.sh` starts the container directly with a named Docker volume.
+- `run-compose.sh` starts the Compose stack.
+- `test-dockerfile.sh` runs the Dockerfile-oriented validation flow.
+- `test-compose.sh` validates the Compose configuration flow.
+
 ### Use Docker Compose (optional)
 
 If you prefer Compose, a ready-to-use example is provided in `docker-compose.yml`:
@@ -178,6 +198,8 @@ docker compose up -d
 By default, the Compose setup stores `/datadir` in the named Docker volume `idena-node-data`.
 This avoids creating a host bind mount unless you explicitly choose a different deployment pattern.
 `IDENA_USER_ACCOUNT_PASS` is intentionally required so the example does not ship with a predictable SSH password.
+The Compose service also defines its own SSH-based `healthcheck` so stack health is visible directly through Compose.
+This Compose healthcheck verifies both the internal SSH port `22` and the internal API port `9009`.
 
 ### Run the container
 
