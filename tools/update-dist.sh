@@ -36,4 +36,7 @@ apt-get autoclean -y
 log "Removing unnecessary packages..."
 apt-get autoremove -y
 
+log "Cleaning up apt package lists..."
+rm -rf /var/lib/apt/lists/*
+
 log "System update and cleanup complete."
