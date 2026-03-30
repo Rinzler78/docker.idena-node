@@ -149,6 +149,20 @@ If you want to build the image locally:
 docker build -t idena-node .
 ```
 
+### Validate the image and configuration
+
+The repository includes dedicated validation scripts:
+
+```sh
+./tests/compose_config_test.sh
+./tests/image_contract_test.sh
+./tests/run_all.sh
+```
+
+- `compose_config_test.sh` checks default and overridden Compose host ports.
+- `image_contract_test.sh` checks image metadata, runtime health, and `/tools` script behavior.
+- `run_all.sh` runs the full validation suite, including `quick_test.sh`.
+
 ### Use Docker Compose (optional)
 
 If you prefer Compose, a ready-to-use example is provided in `docker-compose.yml`:
@@ -159,6 +173,9 @@ export IDENA_P2P_HOST_PORT=40405
 export IDENA_API_HOST_PORT=9999
 docker compose up -d
 ```
+
+By default, the Compose setup stores `/datadir` in the named Docker volume `idena-node-data`.
+This avoids creating a host bind mount unless you explicitly choose a different deployment pattern.
 
 ### Run the container
 

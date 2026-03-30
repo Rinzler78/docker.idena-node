@@ -18,6 +18,16 @@ docker build -t idena-node .
 ./quick_test.sh
 ```
 
+Additional validation scripts are available when you want more targeted checks:
+
+```sh
+./tests/compose_config_test.sh
+./tests/image_contract_test.sh
+./tests/run_all.sh
+```
+
+The default Compose setup uses the named Docker volume `idena-node-data` for `/datadir`.
+
 To test a pre-built image without rebuilding it:
 
 ```sh
