@@ -99,7 +99,11 @@ assert_compose_config() {
 
   log "Validating docker-compose defaults..."
   local default_config
-  default_config=$(IDENA_USER_ACCOUNT_PASS=test-password docker compose config)
+  # Unset any caller-supplied port overrides so we test the compose-file defaults
+  default_config=$(
+    env -u IDENA_SSH_HOST_PORT -u IDENA_P2P_HOST_PORT -u IDENA_API_HOST_PORT \
+    IDENA_USER_ACCOUNT_PASS=test-password docker compose config
+  )
   printf '%s\n' "$default_config" | grep -q 'published: "60022"' || fail "Default SSH host port is not 60022."
   printf '%s\n' "$default_config" | grep -q 'published: "40405"' || fail "Default P2P host port is not 40405."
   printf '%s\n' "$default_config" | grep -q 'published: "9999"' || fail "Default API host port is not 9999."
