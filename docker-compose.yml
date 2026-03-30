@@ -8,8 +8,8 @@ services:
       IDENA_USER_ACCOUNT_PASS: changeMe
       RUN_TIMEOUT: 86400
     ports:
-      - "60022:22"
-      - "40405:40405"
-      - "9999:9009"
+      - "${IDENA_SSH_HOST_PORT:-60022}:22"
+      - "${IDENA_P2P_HOST_PORT:-40405}:40405"
+      - "${IDENA_API_HOST_PORT:-9999}:9009"
     volumes:
       - ./datadir:/datadir

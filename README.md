@@ -82,11 +82,15 @@ mkdir -p ~/MyDockers/idena-node/datadir
 
 Then, run the container:
 ```sh
+SSH_PORT=60022
+P2P_PORT=40405
+API_PORT=9999
+
 docker run -d \
   --restart unless-stopped \
-  -p 60022:22 \
-  -p 40405:40405 \
-  -p 9999:9999 \
+  -p ${SSH_PORT}:22 \
+  -p ${P2P_PORT}:40405 \
+  -p ${API_PORT}:9009 \
   -v ~/MyDockers/idena-node/datadir:/datadir \
   -e IDENA_USER_ACCOUNT_NAME=idenaUser \
   -e IDENA_USER_ACCOUNT_PASS=idenaUserPassword \
@@ -97,16 +101,16 @@ Options explained:
 - `--restart unless-stopped`: Automatically restarts the container unless it has been explicitly stopped (e.g., by `docker stop idena-node`).
 
 > **Note:**
-> The SSH port mapping (`-p 60022:22`) is required if you want to connect to your node via SSH, for example to use port forwarding with the command:
+> The SSH port mapping (`-p ${SSH_PORT}:22`) is required if you want to connect to your node via SSH, for example to use port forwarding with the command:
 > ```sh
-> ssh -L 9999:localhost:9009 idenaUser@<host_ip> -p 60022
+> ssh -L 9999:localhost:9009 idenaUser@<host_ip> -p ${SSH_PORT}
 > ```
-> Here, `60022` is just an example: you can replace it with any free port of your choice, as long as you use the same port number in both the `docker run` and `ssh` commands. This is necessary to allow the Idena desktop application to connect to your remote node as if it were local (the application will connect to `http://localhost:9999`).
+> Here, `${SSH_PORT}` is just an example: you can replace it with any free port of your choice, as long as you use the same port number in both the `docker run` and `ssh` commands. This is necessary to allow the Idena desktop application to connect to your remote node as if it were local (the application will connect to `http://localhost:9999`).
 >
-> The `-p 9999:9999` mapping in the `docker run` command exposes the node's API port. If the API service inside the container listens on port `9009` (Idena standard), and you want to access it directly via `http://<host_ip>:9999` (without an SSH tunnel), you should use `-p 9999:9009` instead. If access is *exclusively* via the SSH tunnel (as described above), this direct port mapping `-p 9999:9999` (or `-p 9999:9009`) is not strictly necessary for this specific access method, as the tunnel handles the connection to the container's internal port `9009`. The architecture diagram illustrates API access via the container's internal port `9009`, typically reached through the SSH tunnel.
+> The `-p ${API_PORT}:9009` mapping in the `docker run` command exposes the node's API port on a configurable host port. If access is *exclusively* via the SSH tunnel (as described above), this direct API port mapping is not strictly necessary for this specific access method, as the tunnel handles the connection to the container's internal port `9009`. The architecture diagram illustrates API access via the container's internal port `9009`, typically reached through the SSH tunnel.
 
 **Replace:**
-- `60022` with your desired SSH port
+- `${SSH_PORT}`, `${P2P_PORT}`, and `${API_PORT}` with your desired host ports
 - `~/MyDockers/idena-node/datadir` with your data directory path
 - `idenaUser` and `idenaUserPassword` with your SSH credentials
 
@@ -118,6 +122,11 @@ Options explained:
 |----------------------------|------------------------------------|----------|-------------------|
 | IDENA_USER_ACCOUNT_NAME    | SSH user account name              | Yes      | idenaUser         |
 | IDENA_USER_ACCOUNT_PASS    | SSH user account password          | Yes      | idenaUserPassword |
+
+**Host ports:**
+- SSH host port: configurable via `-p <ssh_port>:22` in `docker run` or `IDENA_SSH_HOST_PORT` in Compose.
+- P2P host port: configurable via `-p <p2p_port>:40405` in `docker run` or `IDENA_P2P_HOST_PORT` in Compose.
+- API host port: configurable via `-p <api_port>:9009` in `docker run` or `IDENA_API_HOST_PORT` in Compose.
 
 **Data directory:**
 Create a directory on your host to persist node data (if not already done in Quick Start) and copy your `api.key` into it:
@@ -145,6 +154,9 @@ docker build -t idena-node .
 If you prefer Compose, a ready-to-use example is provided in `docker-compose.yml`:
 
 ```sh
+export IDENA_SSH_HOST_PORT=60022
+export IDENA_P2P_HOST_PORT=40405
+export IDENA_API_HOST_PORT=9999
 docker compose up -d
 ```
 
