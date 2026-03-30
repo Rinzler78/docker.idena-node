@@ -1,92 +1,245 @@
 #!/bin/bash
 set -euo pipefail
 
-# Logging function with timestamp
 log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"; }
 
-# Trap to catch errors
 trap 'log "An error occurred. Exiting." >&2' ERR
 
-# Configurable variables
 IDENA_NODE_BINARY="/bin/idena-node"
-TMP_FILENAME="tmp.idena-node"
+IDENA_NODE_BACKUP="${IDENA_NODE_BINARY}.prev"
+RELEASES_API_URL="$(cat /tools/url.releases.txt)"
+LOCK_DIR="/tmp/idena-node-update.lock"
+WORK_DIR=""
 
-# Check required commands
-REQUIRED_COMMANDS=(wget chmod mv curl jq)
+REQUIRED_COMMANDS=(awk chmod curl find grep jq md5sum mkdir mktemp mv rm tar uname wget)
 for cmd in "${REQUIRED_COMMANDS[@]}"; do
   command -v "$cmd" >/dev/null 2>&1 || { log "$cmd is required but not installed."; exit 1; }
 done
 
-# Check required scripts
 for script in /tools/version.remote.sh /tools/version.locale.sh; do
   [ -x "$script" ] || { log "$script is required and must be executable."; exit 1; }
 done
 
-# Get current version early so startup can keep using the embedded binary if
-# the remote release API is temporarily unavailable or rate-limited.
+cleanup() {
+  if [ -n "$WORK_DIR" ] && [ -d "$WORK_DIR" ]; then
+    rm -rf "$WORK_DIR"
+  fi
+  rmdir "$LOCK_DIR" >/dev/null 2>&1 || true
+}
+
+restore_backup() {
+  if [ -f "$IDENA_NODE_BACKUP" ]; then
+    log "Restoring previous idena-node binary from backup."
+    mv -f "$IDENA_NODE_BACKUP" "$IDENA_NODE_BINARY"
+  fi
+}
+
+trap cleanup EXIT
+
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  log "Another update is already running. Skipping concurrent update attempt."
+  exit 0
+fi
+
+WORK_DIR="$(mktemp -d)"
+
 if [ -x "$IDENA_NODE_BINARY" ]; then
-    currentVersion=$(/tools/version.locale.sh)
+  currentVersion=$(/tools/version.locale.sh)
 else
-    currentVersion=""
+  currentVersion=""
 fi
-log "Current version: $currentVersion"
+log "Current version: ${currentVersion:-none}"
 
-# Get remote version
-if remoteVersion=$(/tools/version.remote.sh); then
-    log "Remote version: $remoteVersion"
+curl_release() {
+  curl -sS -L -f --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 "$RELEASES_API_URL"
+}
+
+select_asset_name() {
+  local release_json="$1"
+  local machine
+  machine="$(uname -m)"
+
+  case "$machine" in
+    x86_64|amd64)
+      echo "$release_json" | jq -r '
+        .assets[]?
+        | select(.name? and (.name | test("^idena-node-linux-[0-9]+\\.[0-9]+\\.[0-9]+$")))
+        | .name
+      ' | head -n1
+      ;;
+    aarch64|arm64)
+      echo "$release_json" | jq -r '
+        .assets[]?
+        | select(.name? and (.name | test("^idena-node-linux-aarch64-[0-9]+\\.[0-9]+\\.[0-9]+\\.tar\\.gz$")))
+        | .name
+      ' | head -n1
+      ;;
+    *)
+      log "Unsupported architecture: $machine"
+      return 1
+      ;;
+  esac
+}
+
+download_file() {
+  local url="$1"
+  local destination="$2"
+
+  wget -q --https-only --timeout=20 --tries=2 --output-document="$destination" "$url"
+  [ -s "$destination" ] || return 1
+}
+
+extract_candidate() {
+  local package_path="$1"
+  local asset_name="$2"
+  local candidate_path="$WORK_DIR/idena-node.candidate"
+
+  case "$asset_name" in
+    *.tar.gz)
+      tar -xzf "$package_path" -C "$WORK_DIR"
+      local extracted_binary
+      extracted_binary="$(find "$WORK_DIR" -maxdepth 2 -type f \( -name 'idena-node' -o -name 'idena-node-linux-*' \) | head -n1)"
+      [ -n "$extracted_binary" ] || return 1
+      mv "$extracted_binary" "$candidate_path"
+      ;;
+    *)
+      mv "$package_path" "$candidate_path"
+      ;;
+  esac
+
+  chmod +x "$candidate_path"
+  echo "$candidate_path"
+}
+
+verify_md5() {
+  local package_path="$1"
+  local checksum_path="$2"
+
+  local expected_md5
+  expected_md5="$(grep -Eo '^[a-fA-F0-9]{32}' "$checksum_path" | head -n1)"
+  [ -n "$expected_md5" ] || return 1
+
+  local actual_md5
+  actual_md5="$(md5sum "$package_path" | awk '{print $1}')"
+  [ "$actual_md5" = "$expected_md5" ]
+}
+
+if release_json="$(curl_release)"; then
+  remoteVersion="$(echo "$release_json" | jq -r '.tag_name | ltrimstr("v")')"
 else
+  if [ -n "$currentVersion" ]; then
+    log "Remote version lookup failed. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Unable to retrieve remote version and no local binary is available."
+  exit 1
+fi
+
+if [ -z "$remoteVersion" ] || [ "$remoteVersion" = "null" ]; then
+  if [ -n "$currentVersion" ]; then
+    log "Remote version is empty. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Unable to retrieve remote version. Aborting update."
+  exit 1
+fi
+
+log "Remote version: $remoteVersion"
+
+if [ "$remoteVersion" = "$currentVersion" ]; then
+  log "idena-node is up to date"
+  exit 0
+fi
+
+asset_name="$(select_asset_name "$release_json")"
+if [ -z "$asset_name" ]; then
+  if [ -n "$currentVersion" ]; then
+    log "No compatible release asset found for this architecture. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Unable to find a compatible release asset."
+  exit 1
+fi
+
+asset_url="$(echo "$release_json" | jq -r --arg name "$asset_name" '.assets[]? | select(.name == $name) | .browser_download_url' | head -n1)"
+checksum_name="${asset_name}.md5"
+checksum_url="$(echo "$release_json" | jq -r --arg name "$checksum_name" '.assets[]? | select(.name == $name) | .browser_download_url' | head -n1)"
+
+if [ -z "$asset_url" ] || [ "$asset_url" = "null" ]; then
+  if [ -n "$currentVersion" ]; then
+    log "Compatible asset URL is missing. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Unable to resolve the download URL for the latest release."
+  exit 1
+fi
+
+asset_path="$WORK_DIR/$asset_name"
+checksum_path="$WORK_DIR/$checksum_name"
+
+log "Downloading idena-node version $remoteVersion from $asset_name ..."
+if ! download_file "$asset_url" "$asset_path"; then
+  if [ -n "$currentVersion" ]; then
+    log "Download failed. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Download failed and no current version is available."
+  exit 1
+fi
+
+if [ -n "$checksum_url" ] && [ "$checksum_url" != "null" ]; then
+  log "Verifying downloaded asset checksum..."
+  if ! download_file "$checksum_url" "$checksum_path" || ! verify_md5 "$asset_path" "$checksum_path"; then
     if [ -n "$currentVersion" ]; then
-        log "Remote version lookup failed. Keeping current version: $currentVersion"
-        exit 0
+      log "Checksum validation failed. Keeping current version: $currentVersion"
+      exit 0
     fi
-    log "ERROR: Unable to retrieve remote version and no local binary is available."
+    log "ERROR: Checksum validation failed."
     exit 1
-fi
-
-if [ -z "$remoteVersion" ]; then
-    if [ -n "$currentVersion" ]; then
-        log "Remote version is empty. Keeping current version: $currentVersion"
-        exit 0
-    fi
-    log "ERROR: Unable to retrieve remote version. Aborting update."
-    exit 1
-fi
-
-# Download and update if needed
-if [ -z "$remoteVersion" ] || [ "$remoteVersion" != "$currentVersion" ]; then
-    log "Downloading idena-node version $remoteVersion ..."
-    if ! latestReleaseUrl=$(curl -s -f "$(cat /tools/url.releases.txt)" | jq -r '.assets[]? | select(type == "object" and .name? and (.name | type == "string") and (.name | startswith("idena-node-linux-")) and (.name | contains("aarch64") | not) and (.name | contains(".tar.gz") | not) and (.name | contains(".md5") | not)) | .browser_download_url'); then
-        if [ -n "$currentVersion" ]; then
-            log "Failed to resolve latest release URL. Keeping current version: $currentVersion"
-            exit 0
-        fi
-        log "ERROR: Unable to query the latest release metadata."
-        exit 1
-    fi
-    log "Latest release URL: $latestReleaseUrl"
-    if [ -z "$latestReleaseUrl" ]; then
-        if [ -n "$currentVersion" ]; then
-            log "Latest release URL is empty. Keeping current version: $currentVersion"
-            exit 0
-        fi
-        log "ERROR: Unable to retrieve the download URL for the latest release. The release might not have a 'linux-amd64' asset, or the GitHub API response structure might have changed."
-        exit 1
-    fi
-    rm -f "$TMP_FILENAME"
-    wget --output-document="$TMP_FILENAME" "$latestReleaseUrl" 2>/dev/null || true
-    if [ -f "$TMP_FILENAME" ]; then
-        chmod +x "$TMP_FILENAME"
-        log "Moving $TMP_FILENAME to $IDENA_NODE_BINARY ..."
-        mv "$TMP_FILENAME" "$IDENA_NODE_BINARY"
-        log "idena-node updated to: $remoteVersion"
-    else
-        if [ -n "$currentVersion" ]; then
-            log "Download failed. Keeping current version: $currentVersion"
-            exit 0
-        fi
-        log "Download failed"
-        exit 1
-    fi
+  fi
 else
-    log "idena-node is up to date"
+  log "Checksum asset not available for $asset_name. Skipping checksum verification."
 fi
+
+candidate_path="$(extract_candidate "$asset_path" "$asset_name")"
+candidate_version="$("$candidate_path" --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)"
+if [ -z "$candidate_version" ] || [ "$candidate_version" != "$remoteVersion" ]; then
+  if [ -n "$currentVersion" ]; then
+    log "Candidate binary validation failed. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Candidate binary validation failed."
+  exit 1
+fi
+
+log "Installing idena-node version $candidate_version ..."
+installed_path="$WORK_DIR/idena-node.installed"
+mv "$candidate_path" "$installed_path"
+
+if [ -x "$IDENA_NODE_BINARY" ]; then
+  mv -f "$IDENA_NODE_BINARY" "$IDENA_NODE_BACKUP"
+fi
+
+mv -f "$installed_path" "$IDENA_NODE_BINARY"
+
+if ! installed_version=$(/tools/version.locale.sh); then
+  restore_backup
+  if [ -n "$currentVersion" ]; then
+    log "Installed binary failed post-install validation. Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Installed binary failed post-install validation."
+  exit 1
+fi
+
+if [ "$installed_version" != "$remoteVersion" ]; then
+  restore_backup
+  if [ -n "$currentVersion" ]; then
+    log "Installed binary version mismatch ($installed_version). Keeping current version: $currentVersion"
+    exit 0
+  fi
+  log "ERROR: Installed binary version mismatch."
+  exit 1
+fi
+
+log "idena-node updated to: $installed_version"

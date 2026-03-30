@@ -280,3 +280,44 @@ run_quick_dockerfile_test() {
     echo "[SUCCESS] All tests passed."
   )
 }
+
+run_update_fallback_test() {
+  (
+    require_command docker
+    local image_name="$1"
+    local container_id=""
+
+    cleanup_update_container() {
+      if [ -n "$container_id" ]; then
+        docker rm -f "$container_id" >/dev/null 2>&1 || true
+        echo "Container $container_id deleted."
+      fi
+    }
+    trap cleanup_update_container EXIT
+
+    echo "[INFO] Running container for update fallback test..."
+    container_id=$(docker run -d --rm \
+      --env RUN_TIMEOUT=120 \
+      --env IDENA_USER_ACCOUNT_NAME=idenaClient \
+      --env IDENA_USER_ACCOUNT_PASS=idenaClientPassword \
+      "$image_name")
+    [ -n "$container_id" ] || fail "Docker run failed: container not started for fallback test."
+
+    echo "[INFO] Waiting for fallback test container to become healthy..."
+    wait_for_health "$container_id" 30
+
+    local before_version after_version
+    before_version=$(docker exec "$container_id" /tools/version.locale.sh)
+    [[ $before_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Initial version is invalid in fallback test: $before_version"
+
+    echo "[INFO] Forcing release API failure and re-running update.sh..."
+    docker exec "$container_id" bash -lc "printf '%s\n' 'http://127.0.0.1:9/releases/latest' > /tools/url.releases.txt && /tools/update.sh"
+
+    after_version=$(docker exec "$container_id" /tools/version.locale.sh)
+    [ "$before_version" = "$after_version" ] || fail "Fallback update changed the installed version ($before_version -> $after_version)."
+
+    docker exec "$container_id" test ! -e /bin/idena-node.prev || fail "Fallback update left an unexpected backup binary behind."
+
+    echo "[SUCCESS] Update fallback test passed."
+  )
+}
