@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Print only the idena-node version number (e.g. 1.1.1)
 if [ -x /bin/idena-node ]; then

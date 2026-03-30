@@ -8,6 +8,23 @@ require_command docker
 ROOT="$(repo_root)"
 cd "$ROOT"
 
+if [[ "${1:-}" == "--help" ]]; then
+  echo "Usage: $0 [--help]"
+  echo ""
+  echo "Build and run an idena-node container from the Dockerfile."
+  echo ""
+  echo "Environment variables (all optional, defaults shown):"
+  echo "  IMAGE_NAME                  idena-node:latest"
+  echo "  CONTAINER_NAME              idena-node"
+  echo "  IDENA_USER_ACCOUNT_NAME     idenaUser"
+  echo "  IDENA_USER_ACCOUNT_PASS     idenaClientPassword"
+  echo "  IDENA_SSH_HOST_PORT         60022"
+  echo "  IDENA_P2P_HOST_PORT         40405"
+  echo "  IDENA_API_HOST_PORT         9999"
+  echo "  RUN_TIMEOUT                 86400"
+  exit 0
+fi
+
 IMAGE_NAME="${IMAGE_NAME:-idena-node:latest}"
 CONTAINER_NAME="${CONTAINER_NAME:-idena-node}"
 SSH_HOST_PORT="${IDENA_SSH_HOST_PORT:-60022}"

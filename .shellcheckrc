@@ -1,0 +1,4 @@
+# Look for sourced files relative to the directory of the script being checked
+source-path=SCRIPTDIR
+# Follow sourced files when the path can be resolved
+external-sources=true

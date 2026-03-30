@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 
 # Logging function with timestamp (optional, but good for consistency if other scripts use it)
 # log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"; }
