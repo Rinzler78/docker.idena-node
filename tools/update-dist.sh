@@ -23,7 +23,12 @@ log "Performing distribution upgrade..."
 apt-get dist-upgrade -y
 
 log "Removing old linux kernels..."
-apt-get remove -y --purge $(dpkg -l 'linux-*' | sed "/^ii/!d;/'$(uname -r | sed 's/\(.*\)-\([^0-9]\+\)/\1/')'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d") || log "No old kernels to remove."
+mapfile -t _old_kernels < <(dpkg -l 'linux-*' | sed "/^ii/!d;/'$(uname -r | sed 's/\(.*\)-\([^0-9]\+\)/\1/')'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d")
+if [ "${#_old_kernels[@]}" -gt 0 ]; then
+  apt-get remove -y --purge "${_old_kernels[@]}"
+else
+  log "No old kernels to remove."
+fi
 
 log "Cleaning up package cache..."
 apt-get autoclean -y

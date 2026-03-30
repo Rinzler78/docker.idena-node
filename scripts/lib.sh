@@ -144,6 +144,7 @@ assert_image_contract() {
     printf '%s\n' "$ports_json" | jq -e 'has("22/tcp") and has("40405/tcp") and has("9009/tcp")' >/dev/null || fail "Image exposed ports metadata is incomplete."
 
     local container_id=""
+    # shellcheck disable=SC2329  # invoked indirectly via trap
     cleanup_contract_container() {
       if [ -n "$container_id" ]; then
         docker rm -f "$container_id" >/dev/null 2>&1 || true
@@ -183,6 +184,7 @@ run_quick_dockerfile_test() {
     local idena_pass="${IDENA_USER_ACCOUNT_PASS:-idenaClientPassword}"
     local container_id=""
 
+    # shellcheck disable=SC2329  # invoked indirectly via trap
     cleanup_quick_container() {
       if [ -n "$container_id" ]; then
         docker rm -f "$container_id" >/dev/null 2>&1 || true
@@ -202,13 +204,12 @@ run_quick_dockerfile_test() {
       ports="$ssh_host_port:22 $p2p_host_port:40405 $api_host_port:9009"
     fi
 
-    local ports_mapping=""
-    local mapping
+    local -a ports_mapping=()
+    local mapping host_port container_port
     for mapping in $ports; do
-      local host_port container_port
       host_port=$(echo "$mapping" | cut -d: -f1)
       container_port=$(echo "$mapping" | cut -d: -f2)
-      ports_mapping="$ports_mapping -p $host_port:$container_port"
+      ports_mapping+=("-p" "$host_port:$container_port")
     done
 
     echo "[INFO] Running Docker container..."
@@ -217,14 +218,14 @@ run_quick_dockerfile_test() {
       -it \\
       --env IDENA_USER_ACCOUNT_NAME=$idena_user \\
       --env IDENA_USER_ACCOUNT_PASS=*** \\
-      $ports_mapping \\
+      ${ports_mapping[*]} \\
       --rm -d $image_name"
     container_id=$(docker run \
       --env RUN_TIMEOUT="$run_timeout" \
       -it \
       --env IDENA_USER_ACCOUNT_NAME="$idena_user" \
       --env IDENA_USER_ACCOUNT_PASS="$idena_pass" \
-      $ports_mapping \
+      "${ports_mapping[@]}" \
       --rm -d "$image_name")
     [ -n "$container_id" ] || fail "Docker run failed: container not started."
     echo "[INFO] Container started: $container_id"
@@ -291,6 +292,7 @@ run_update_fallback_test() {
     local image_name="$1"
     local container_id=""
 
+    # shellcheck disable=SC2329  # invoked indirectly via trap
     cleanup_update_container() {
       if [ -n "$container_id" ]; then
         docker rm -f "$container_id" >/dev/null 2>&1 || true
