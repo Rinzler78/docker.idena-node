@@ -20,7 +20,7 @@ test, and submit contributions.
 #### Scenario: CONTRIBUTING.md contains build instructions
 - **WHEN** a contributor opens `CONTRIBUTING.md`
 - **THEN** they find clear instructions to: install prerequisites, run `docker build .`,
-  run `./quick_test.sh`, and submit a pull request against the `develop` branch
+  run `./scripts/test-dockerfile.sh`, and submit a pull request against the `develop` branch
 
 #### Scenario: CONTRIBUTING.md is linked from README
 - **WHEN** a user reads the Contributing section of `README.md`

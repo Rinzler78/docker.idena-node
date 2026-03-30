@@ -15,15 +15,7 @@ docker build -t idena-node .
 ## Running tests
 
 ```sh
-./quick_test.sh
-```
-
-Additional validation scripts are available when you want more targeted checks:
-
-```sh
-./tests/compose_config_test.sh
-./tests/image_contract_test.sh
-./tests/run_all.sh
+./scripts/test-dockerfile.sh
 ```
 
 Convenience wrappers are also available:
@@ -43,7 +35,7 @@ Set `IDENA_USER_ACCOUNT_PASS` in your shell or `.env` file before running `docke
 To test a pre-built image without rebuilding it:
 
 ```sh
-./quick_test.sh --image_name rinzlerfr/idena-node:quicktest
+./scripts/test-dockerfile.sh --image_name rinzlerfr/idena-node:quicktest
 ```
 
 ## Submitting a PR

@@ -16,7 +16,7 @@ cleanup() {
 trap cleanup EXIT
 
 log "Testing docker-compose workflow..."
-"$ROOT/tests/compose_config_test.sh"
+assert_compose_config
 docker compose config >/dev/null
 docker compose up -d
 

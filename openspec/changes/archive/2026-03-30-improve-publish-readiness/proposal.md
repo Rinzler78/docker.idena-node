@@ -24,7 +24,7 @@ reference-quality public project.
 - **ADDED** `.dockerignore` to exclude `.git/`, `.github/`, `*.md` from build context
 - **FIXED** `HEALTHCHECK`: removed unreliable `curl` to Idena API; check SSH-only (`/dev/tcp/localhost/22`)
 - **FIXED** README: completed truncated paragraph at line 107
-- **FIXED** `quick_test.sh`: skip `docker_build()` when `--image_name` flag is supplied (avoids double build in CI)
+- **FIXED** Dockerfile test script: skip image rebuild when `--image_name` is supplied (avoids double build in CI)
 
 ### 🟡 Minor (completeness)
 - **ADDED** `CONTRIBUTING.md`
@@ -43,7 +43,7 @@ reference-quality public project.
   - `tools/version.remote.sh`
   - `tools/start.sh`
   - `tools/update-dist.sh`
-  - `quick_test.sh`
+  - `scripts/test-dockerfile.sh`
   - `README.md`
   - `CONTRIBUTING.md` (new)
   - `CHANGELOG.md` (new)

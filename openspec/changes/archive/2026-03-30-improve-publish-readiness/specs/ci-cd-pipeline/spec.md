@@ -30,7 +30,7 @@ version tags that are current and not end-of-life.
 
 ### Requirement: Quick Test Runs Once Per CI Pipeline
 The CI pipeline MUST NOT build the Docker image more than once per workflow run.
-`quick_test.sh`, when invoked with `--image_name`, MUST use the pre-built image
+`scripts/test-dockerfile.sh`, when invoked with `--image_name`, MUST use the pre-built image
 without triggering a rebuild.
 
 #### Scenario: Single build in CI

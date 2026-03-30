@@ -34,15 +34,15 @@ be deterministic and fast.
 - **THEN** the SSH service is available within 15 seconds
 - **AND** no `apt-get` commands are logged in the container output during restart
 
-### Requirement: Quick Test Does Not Rebuild When Image is Pre-Supplied
-When `quick_test.sh` is invoked with the `--image_name` flag, it MUST use the
+### Requirement: Dockerfile Test Does Not Rebuild When Image is Pre-Supplied
+When `scripts/test-dockerfile.sh` is invoked with the `--image_name` flag, it MUST use the
 provided image directly and MUST NOT call `docker build`.
 
 #### Scenario: --image_name flag skips build
-- **WHEN** `./quick_test.sh --image_name idena-node:latest` is run
+- **WHEN** `./scripts/test-dockerfile.sh --image_name idena-node:latest` is run
 - **THEN** no `docker build` command is executed during the test run
 - **AND** the script proceeds directly to `docker run`
 
 #### Scenario: No --image_name flag triggers build
-- **WHEN** `./quick_test.sh` is run without any arguments
+- **WHEN** `./scripts/test-dockerfile.sh` is run without any arguments
 - **THEN** `docker build .` is called before `docker run`

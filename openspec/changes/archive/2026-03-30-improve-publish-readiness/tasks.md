@@ -44,16 +44,16 @@
     HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
       CMD bash -c '</dev/tcp/localhost/22'
     ```
-  - **Validation:** `docker run …` container reaches `healthy` status within 60 s; `./quick_test.sh` exits 0
+  - **Validation:** `docker run …` container reaches `healthy` status within 60 s; `./scripts/test-dockerfile.sh` exits 0
 
 - [x] 2.5 Complete truncated README paragraph (line 107)
   - The sentence starting "...as the tunnel..." is cut off; complete the explanation
   - **Validation:** `grep -n 'as the tunnel' README.md` returns empty (sentence completed); README renders cleanly in GitHub preview
 
-- [x] 2.6 Fix `quick_test.sh` — skip build when `--image_name` flag is provided
+- [x] 2.6 Fix `scripts/test-dockerfile.sh` — skip build when `--image_name` flag is provided
   - Add `skip_build=false` variable; set `skip_build=true` when `image_name_from_flag` is non-empty
   - Wrap `docker_build` call: `if [ "$skip_build" = false ]; then docker_build … fi`
-  - **Validation:** `./quick_test.sh --image_name idena-node:latest` does NOT trigger `docker build`; `./quick_test.sh` (no flag) still builds; CI log shows single build step
+  - **Validation:** `./scripts/test-dockerfile.sh --image_name idena-node:latest` does NOT trigger `docker build`; `./scripts/test-dockerfile.sh` (no flag) still builds; CI log shows single build step
 
 ## Phase 3 — Quality Improvements
 
@@ -78,7 +78,7 @@
 - [x] 4.1 Run `docker build .` locally — must succeed with 0 errors and 0 warnings
   - **Validation:** Exit code 0; no `WARN` lines in output
 
-- [x] 4.2 Run `./quick_test.sh` locally — must exit 0
+- [x] 4.2 Run `./scripts/test-dockerfile.sh` locally — must exit 0
   - **Validation:** Final line reads `[SUCCESS] All tests passed.`
 
 - [x] 4.3 Verify `openspec validate improve-publish-readiness --strict` passes

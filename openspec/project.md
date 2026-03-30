@@ -12,7 +12,7 @@
 ## Tech Stack
 
 - **Docker / Dockerfile**: Ubuntu 22.04 base image
-- **Bash (>= 4)**: All tooling scripts (`start.sh`, `update.sh`, `update-dist.sh`, `version.*.sh`, `quick_test.sh`)
+- **Bash (>= 4)**: All tooling scripts (`start.sh`, `update.sh`, `update-dist.sh`, `version.*.sh`, `scripts/*.sh`)
 - **GitHub Actions**: CI/CD — build, test, push to Docker Hub, create GitHub Release
 - **Docker Hub**: Public image registry (`rinzlerfr/idena-node`)
 - **sshpass**: Used in test suite to verify SSH connectivity
@@ -49,8 +49,8 @@
 - Tags pushed from `master` branch only
 
 ### Testing Strategy
-- `quick_test.sh` is the integration test: build image → run container → wait for healthy → verify version scripts → test SSH
-- CI calls `quick_test.sh --image_name <tag>` after the build step; the script MUST NOT re-build when a pre-built image is provided via `--image_name`
+- `scripts/test-dockerfile.sh` is the integration test: build image → run container → wait for healthy → verify version scripts → test SSH
+- CI calls `scripts/test-dockerfile.sh --image_name <tag>` after the build step; the script MUST NOT re-build when a pre-built image is provided via `--image_name`
 - All exit codes mapped to named constants (10=build fail, 11=run fail, 14=unhealthy, 16=version fail, 17=ssh fail)
 
 ### Git Workflow

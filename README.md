@@ -149,20 +149,6 @@ If you want to build the image locally:
 docker build -t idena-node .
 ```
 
-### Validate the image and configuration
-
-The repository includes dedicated validation scripts:
-
-```sh
-./tests/compose_config_test.sh
-./tests/image_contract_test.sh
-./tests/run_all.sh
-```
-
-- `compose_config_test.sh` checks default and overridden Compose host ports.
-- `image_contract_test.sh` checks image metadata, runtime health, and `/tools` script behavior.
-- `run_all.sh` runs the full validation suite, including `quick_test.sh`.
-
 ### Helper scripts
 
 The `scripts/` directory provides wrappers for the common workflows:
@@ -180,8 +166,8 @@ The `scripts/` directory provides wrappers for the common workflows:
 - `build-compose.sh` runs `docker compose build`.
 - `run-dockerfile.sh` starts the container directly with a named Docker volume.
 - `run-compose.sh` starts the Compose stack.
-- `test-dockerfile.sh` runs the Dockerfile-oriented validation flow.
-- `test-compose.sh` validates the Compose configuration flow.
+- `test-dockerfile.sh` runs the Dockerfile-oriented validation flow, including image contract checks and end-to-end startup validation.
+- `test-compose.sh` validates the Compose configuration flow and waits for the service healthcheck to report `healthy`.
 
 ### Use Docker Compose (optional)
 

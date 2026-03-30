@@ -31,9 +31,9 @@ jobs:
         --tag rinzlerfr/idena-node:latest \
         --tag rinzlerfr/idena-node:${{ steps.extract_tag.outputs.tag_name }}
     
-    - name: Quick Test
+    - name: Dockerfile Test
       run: |
-        ./quick_test.sh --image_name rinzlerfr/idena-node:quicktest
+        ./scripts/test-dockerfile.sh --image_name rinzlerfr/idena-node:quicktest --allow-internal-ssh-fallback
     
     - name: docker push
       run: |

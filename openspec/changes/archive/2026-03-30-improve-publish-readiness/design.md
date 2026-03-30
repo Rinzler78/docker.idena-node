@@ -66,13 +66,13 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
 **Alternatives considered:**
 - Use `idena-node` CLI to query node status — not available without api.key
 - Check for process existence (`pgrep idena-node`) — does not verify SSH is usable
-- Keep dual check, accept false negatives — bad UX; `quick_test.sh` depends on healthy status
+- Keep dual check, accept false negatives — bad UX; the Dockerfile test depends on healthy status
 
 ---
 
-### Decision 4: `quick_test.sh` — skip build when `--image_name` provided
+### Decision 4: `scripts/test-dockerfile.sh` — skip build when `--image_name` provided
 
-**Problem:** `quick_test.sh` always calls `docker_build()` regardless of whether `--image_name`
+**Problem:** the Dockerfile test entry point always calls `docker_build()` regardless of whether `--image_name`
 was explicitly provided. In CI, this means the image is built twice (once by the workflow,
 once by the test script).
 
@@ -104,7 +104,7 @@ image history).
 |------|-----------|
 | Moving `update-dist.sh` to build time may cause CI builds to take longer | Acceptable; Docker layer cache reduces impact after first build |
 | Users who rely on `ENV IDENA_USER_ACCOUNT_PASS` in their `Dockerfile FROM` stacks will break | Breaking change is intentional for security; documented in CHANGELOG |
-| HEALTHCHECK change means `quick_test.sh` must not rely on API port being healthy | Already the case; `quick_test.sh` only checks SSH and version scripts |
+| HEALTHCHECK change means Dockerfile test must not rely on API port being healthy | Already the case; the Dockerfile test only checks SSH and version scripts |
 
 ## Open Questions
 
