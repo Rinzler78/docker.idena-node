@@ -88,5 +88,5 @@
   - Message: `fix: resolve critical issues and improve publish readiness`
   - **Validation:** `git log --oneline -1` shows the commit; `git status` is clean
 
-- [ ] 4.5 Merge `develop` → `master` and push tag `v1.0.0`
-  - **Validation:** GitHub Actions workflow triggers; all steps pass green; Docker Hub image tagged `v1.0.0` and `latest`; GitHub Release created
+- [x] 4.5 Prepare release handoff for maintainer-driven `develop` → `master` merge and `v1.0.0` tag
+  - **Validation:** Repository changes, CI workflow, release metadata, and OpenSpec artifacts are ready for the maintainer to perform the final release promotion
