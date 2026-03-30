@@ -9,6 +9,7 @@ ROOT="$(repo_root)"
 cd "$ROOT"
 
 export IDENA_USER_ACCOUNT_PASS="${IDENA_USER_ACCOUNT_PASS:-test-password}"
+export RUN_TIMEOUT="${RUN_TIMEOUT:-86400}"
 
 cleanup() {
   docker compose down -v >/dev/null 2>&1 || true

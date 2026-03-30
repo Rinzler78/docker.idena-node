@@ -19,11 +19,15 @@ repo_root() {
 build_dockerfile_image() {
   require_command docker
   local image_name="$1"
+  local build_arg_name="${IDENA_USER_ACCOUNT_NAME:-idenaClient}"
+  local build_arg_pass="${IDENA_USER_ACCOUNT_PASS:-idenaClientPassword}"
   local root
   root="$(repo_root)"
   cd "$root"
   log "Building Docker image '$image_name' from Dockerfile..."
-  docker build . --tag "$image_name"
+  docker build . --tag "$image_name" \
+    --build-arg IDENA_USER_ACCOUNT_NAME="$build_arg_name" \
+    --build-arg IDENA_USER_ACCOUNT_PASS="$build_arg_pass"
   log "Dockerfile build completed."
 }
 
@@ -150,8 +154,8 @@ assert_image_contract() {
     log "Running container to verify runtime contract..."
     container_id=$(docker run -d --rm \
       --env RUN_TIMEOUT=60 \
-      --env IDENA_USER_ACCOUNT_NAME=idenaClient \
-      --env IDENA_USER_ACCOUNT_PASS=idenaClientPassword \
+      --env IDENA_USER_ACCOUNT_NAME="${IDENA_USER_ACCOUNT_NAME:-idenaClient}" \
+      --env IDENA_USER_ACCOUNT_PASS="${IDENA_USER_ACCOUNT_PASS:-idenaClientPassword}" \
       "$image_name")
 
     wait_for_health "$container_id" 30
@@ -298,8 +302,8 @@ run_update_fallback_test() {
     echo "[INFO] Running container for update fallback test..."
     container_id=$(docker run -d --rm \
       --env RUN_TIMEOUT=120 \
-      --env IDENA_USER_ACCOUNT_NAME=idenaClient \
-      --env IDENA_USER_ACCOUNT_PASS=idenaClientPassword \
+      --env IDENA_USER_ACCOUNT_NAME="${IDENA_USER_ACCOUNT_NAME:-idenaClient}" \
+      --env IDENA_USER_ACCOUNT_PASS="${IDENA_USER_ACCOUNT_PASS:-idenaClientPassword}" \
       "$image_name")
     [ -n "$container_id" ] || fail "Docker run failed: container not started for fallback test."
 

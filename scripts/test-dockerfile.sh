@@ -13,6 +13,9 @@ cd "$ROOT"
 
 IMAGE_NAME="${IMAGE_NAME:-idena-node:test-suite}"
 ALLOW_INTERNAL_SSH_FALLBACK="false"
+export IDENA_USER_ACCOUNT_NAME="${IDENA_USER_ACCOUNT_NAME:-idenaClient}"
+export IDENA_USER_ACCOUNT_PASS="${IDENA_USER_ACCOUNT_PASS:-idenaClientPassword}"
+export RUN_TIMEOUT="${RUN_TIMEOUT:-120}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
