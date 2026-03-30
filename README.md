@@ -207,6 +207,11 @@ Then, in the Idena app, set the node address to:
 
 ## Update Instructions
 
+At container startup, the embedded `idena-node` binary is checked against the latest GitHub release.
+If a newer compatible binary is available, the container downloads it, validates it before activation,
+and keeps the previous binary as a local fallback. If the release check or download fails, the container
+continues to run with the currently installed binary instead of blocking startup.
+
 1. Pull the latest image:
    ```sh
    docker pull rinzlerfr/idena-node
