@@ -4,8 +4,8 @@ services:
     container_name: idena-node
     restart: unless-stopped
     environment:
-      IDENA_USER_ACCOUNT_NAME: idenaUser
-      IDENA_USER_ACCOUNT_PASS: changeMe
+      IDENA_USER_ACCOUNT_NAME: ${IDENA_USER_ACCOUNT_NAME:-idenaUser}
+      IDENA_USER_ACCOUNT_PASS: ${IDENA_USER_ACCOUNT_PASS:?Set IDENA_USER_ACCOUNT_PASS in your environment or .env file}
       RUN_TIMEOUT: 86400
     ports:
       - "${IDENA_SSH_HOST_PORT:-60022}:22"

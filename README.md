@@ -171,11 +171,13 @@ If you prefer Compose, a ready-to-use example is provided in `docker-compose.yml
 export IDENA_SSH_HOST_PORT=60022
 export IDENA_P2P_HOST_PORT=40405
 export IDENA_API_HOST_PORT=9999
+export IDENA_USER_ACCOUNT_PASS=replace-me
 docker compose up -d
 ```
 
 By default, the Compose setup stores `/datadir` in the named Docker volume `idena-node-data`.
 This avoids creating a host bind mount unless you explicitly choose a different deployment pattern.
+`IDENA_USER_ACCOUNT_PASS` is intentionally required so the example does not ship with a predictable SSH password.
 
 ### Run the container
 

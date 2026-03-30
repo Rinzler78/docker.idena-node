@@ -18,7 +18,6 @@ log "Running image contract checks..."
 "$ROOT/tests/image_contract_test.sh" --image_name "$IMAGE_NAME"
 
 log "Running end-to-end quick test..."
-"$ROOT/quick_test.sh" --image_name "$IMAGE_NAME"
+"$ROOT/quick_test.sh" --image_name "$IMAGE_NAME" --allow-internal-ssh-fallback
 
 log "All repository tests passed."
-

@@ -30,9 +30,6 @@ VOLUME ["/datadir"]
 # DO NOT use default passwords in production environments.
 ARG IDENA_USER_ACCOUNT_NAME=idenaClient
 ARG IDENA_USER_ACCOUNT_PASS=idenaClientPassword
-ARG IDENA_SSH_EXPOSE_PORT=22
-ARG IDENA_P2P_EXPOSE_PORT=40405
-ARG IDENA_API_EXPOSE_PORT=9009
 
 # Environment variables
 # IDENA_USER_ACCOUNT_NAME will be taken from the ARG passed during build or its default.
@@ -52,9 +49,9 @@ RUN /tools/update-dist.sh
 # If update.sh needs root, run it before USER ${APP_USER_NAME}
 RUN /tools/update.sh
 
-# Expose container ports as image metadata. Host-side ports remain configurable
-# through docker run or docker compose port mappings.
-EXPOSE ${IDENA_SSH_EXPOSE_PORT} ${IDENA_P2P_EXPOSE_PORT} ${IDENA_API_EXPOSE_PORT}
+# Expose fixed container ports. Host-side ports remain configurable through
+# docker run or docker compose port mappings.
+EXPOSE 22 40405 9009
 
 # Healthcheck for SSH service (will run as root)
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \

@@ -10,6 +10,7 @@ ROOT="$(repo_root)"
 cd "$ROOT"
 
 IMAGE_NAME="idena-node:test-contract"
+skip_build=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -17,8 +18,12 @@ while [[ $# -gt 0 ]]; do
       IMAGE_NAME="$2"
       shift 2
       ;;
+    --skip-build)
+      skip_build=true
+      shift
+      ;;
     --help)
-      echo "Usage: $0 [--image_name IMAGE_NAME]"
+      echo "Usage: $0 [--image_name IMAGE_NAME] [--skip-build]"
       exit 0
       ;;
     *)
@@ -27,9 +32,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+if [ "$skip_build" = false ]; then
   build_test_image "$IMAGE_NAME"
 else
+  docker image inspect "$IMAGE_NAME" >/dev/null 2>&1 || fail "Image '$IMAGE_NAME' does not exist and --skip-build was requested."
   log "Using existing image '$IMAGE_NAME'."
 fi
 
@@ -76,4 +82,3 @@ printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail "version.
 docker exec "$container_id" bash -lc 'echo > /dev/tcp/127.0.0.1/22' >/dev/null 2>&1 || fail "SSH port 22 is not reachable inside the container."
 
 log "Image contract tests passed."
-

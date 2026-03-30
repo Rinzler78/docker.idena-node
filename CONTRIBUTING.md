@@ -27,6 +27,7 @@ Additional validation scripts are available when you want more targeted checks:
 ```
 
 The default Compose setup uses the named Docker volume `idena-node-data` for `/datadir`.
+Set `IDENA_USER_ACCOUNT_PASS` in your shell or `.env` file before running `docker compose up`.
 
 To test a pre-built image without rebuilding it:
 

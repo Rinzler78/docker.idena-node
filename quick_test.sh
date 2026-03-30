@@ -18,6 +18,7 @@ idena_pass="$DEFAULT_PASS"
 run_timeout=$DEFAULT_TIMEOUT
 ports="$DEFAULT_PORTS"
 skip_build=false
+allow_internal_ssh_fallback=false
 
 container_id=""
 
@@ -31,7 +32,7 @@ fi
 # Helper: Print usage
 # --------------------
 print_help() {
-    echo "Usage: $0 [--image_name IMAGE_NAME] [POSITIONAL_IMAGE_NAME] [--user USER] [--pass PASS] [--timeout SECONDS] [--ports \"host:cont ...\"]"
+    echo "Usage: $0 [--image_name IMAGE_NAME] [POSITIONAL_IMAGE_NAME] [--user USER] [--pass PASS] [--timeout SECONDS] [--ports \"host:cont ...\"] [--allow-internal-ssh-fallback]"
     echo "\nOptions:"
     echo "  --image_name Docker image name (default: $DEFAULT_IMAGE_NAME)"
     echo "  [POSITIONAL_IMAGE_NAME] Positional argument for Docker image name (overridden by --image_name if both are present)"
@@ -39,6 +40,7 @@ print_help() {
     echo "  --pass      SSH password (default: $DEFAULT_PASS)"
     echo "  --timeout   Timeout in seconds (default: $DEFAULT_TIMEOUT)"
     echo "  --ports     Ports mapping (default: '$DEFAULT_PORTS')"
+    echo "  --allow-internal-ssh-fallback Allow internal SSH validation when host port publishing is unavailable"
     echo "  --help      Show this help message"
 }
 
@@ -57,6 +59,8 @@ while [[ $# -gt 0 ]]; do
             run_timeout="$2"; shift 2;;
         --ports)
             ports="$2"; shift 2;;
+        --allow-internal-ssh-fallback)
+            allow_internal_ssh_fallback=true; shift;;
         --help)
             print_help; exit 0;;
         *)
@@ -87,7 +91,7 @@ fi
 # --------------------
 # Dependency check
 # --------------------
-for dep in docker sshpass; do
+for dep in docker sshpass timeout; do
     if ! command -v $dep &>/dev/null; then
         echo "$dep is required but not installed. Aborting."
         exit 2
@@ -243,6 +247,11 @@ if command -v sshpass >/dev/null; then
             exit 17
         fi
     else
+        if [ "$allow_internal_ssh_fallback" = false ]; then
+            echo "[FAIL] Published host SSH port $ssh_port is not reachable."
+            docker rm -f "$container_id"
+            exit 17
+        fi
         echo "[WARN] Published host ports are not reachable in this Docker environment; falling back to internal SSH validation."
         if ! docker exec "$container_id" bash -lc "echo > /dev/tcp/127.0.0.1/22 && getent passwd '$idena_user' >/dev/null"; then
             echo "[FAIL] Internal SSH validation failed."
