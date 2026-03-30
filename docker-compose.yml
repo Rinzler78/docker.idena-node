@@ -1,0 +1,15 @@
+services:
+  idena-node:
+    image: rinzlerfr/idena-node:latest
+    container_name: idena-node
+    restart: unless-stopped
+    environment:
+      IDENA_USER_ACCOUNT_NAME: idenaUser
+      IDENA_USER_ACCOUNT_PASS: changeMe
+      RUN_TIMEOUT: 86400
+    ports:
+      - "60022:22"
+      - "40405:40405"
+      - "9999:9009"
+    volumes:
+      - ./datadir:/datadir

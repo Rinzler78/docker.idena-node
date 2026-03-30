@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Extract tag name
       id: extract_tag
-      run: echo ::set-output name=tag_name::${GITHUB_REF#refs/tags/}
+      run: echo "tag_name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
       
     - name: docker login
       env:
@@ -41,7 +41,7 @@ jobs:
         docker push rinzlerfr/idena-node:latest
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.extract_tag.outputs.tag_name }}
       env:

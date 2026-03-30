@@ -35,10 +35,6 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo '{ "IpfsConf": { "Profile": "server" } }' > "$CONFIG_FILE"
 fi
 
-# Update distribution
-log "Updating distribution packages..."
-/tools/update-dist.sh
-
 # Update idena node binary
 log "Updating idena-node binary..."
 /tools/update.sh

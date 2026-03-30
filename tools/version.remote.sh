@@ -7,7 +7,7 @@ set -eo pipefail
 # Trap to catch errors
 trap 'echo "An error occurred in version.remote.sh. Exiting." >&2' ERR
 
-API_URL=$(cat tools/url.releases.txt)
+API_URL=$(cat /tools/url.releases.txt)
 
 # Use -f to make curl fail on HTTP errors (4xx, 5xx)
 # Use -L to follow redirects (good practice, though GitHub API usually doesn't redirect here)

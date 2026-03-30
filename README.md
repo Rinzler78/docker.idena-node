@@ -140,6 +140,14 @@ If you want to build the image locally:
 docker build -t idena-node .
 ```
 
+### Use Docker Compose (optional)
+
+If you prefer Compose, a ready-to-use example is provided in `docker-compose.yml`:
+
+```sh
+docker compose up -d
+```
+
 ### Run the container
 
 See [Quick Start](#quick-start).
@@ -228,6 +236,8 @@ If you find this project useful, donations are welcome:
 ---
 
 ## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local build, test, and pull request guidelines.
 
 Contributions are welcome!
 Please open an issue or a pull request on [GitHub](https://github.com/Rinzler78/docker.idena-node).

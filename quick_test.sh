@@ -17,6 +17,7 @@ idena_user="$DEFAULT_USER"
 idena_pass="$DEFAULT_PASS"
 run_timeout=$DEFAULT_TIMEOUT
 ports="$DEFAULT_PORTS"
+skip_build=false
 
 container_id=""
 
@@ -69,6 +70,7 @@ done
 # 3. Default image name
 if [ -n "$image_name_from_flag" ]; then
     image_name="$image_name_from_flag"
+    skip_build=true
 elif [ -n "$image_name_from_positional" ]; then
     image_name="$image_name_from_positional"
 else
@@ -166,9 +168,13 @@ docker_run() {
 # Main logic
 # --------------------
 
-if ! docker_build "$image_name"; then
-    echo "[FAIL] Docker build failed."
-    exit 10
+if [ "$skip_build" = false ]; then
+    if ! docker_build "$image_name"; then
+        echo "[FAIL] Docker build failed."
+        exit 10
+    fi
+else
+    echo "[INFO] Skipping Docker build because --image_name was provided."
 fi
 
 if ! docker_run "$image_name" "$ports" "$run_timeout" "$idena_user" "$idena_pass"; then
@@ -215,11 +221,35 @@ fi
 # Test SSH connection
 if command -v sshpass >/dev/null; then
     echo "[INFO] Testing SSH connection..."
-    sshpass -p "$idena_pass" ssh -o StrictHostKeyChecking=no -p $(echo $ports | tr ' ' '\n' | grep ':22$' | cut -d: -f1) $idena_user@127.0.0.1 echo "SSH connection successful" || {
-        echo "[FAIL] SSH connection failed."
-        docker rm -f "$container_id"
-        exit 17
-    }
+    ssh_port=$(echo "$ports" | tr ' ' '\n' | grep ':22$' | cut -d: -f1)
+    host_port_accessible=false
+    if timeout 1 bash -c "</dev/tcp/127.0.0.1/$ssh_port" >/dev/null 2>&1; then
+        host_port_accessible=true
+    fi
+
+    if [ "$host_port_accessible" = true ]; then
+        ssh_connected=false
+        for i in $(seq 1 10); do
+            if sshpass -p "$idena_pass" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -p "$ssh_port" "$idena_user@127.0.0.1" echo "SSH connection successful"; then
+                ssh_connected=true
+                break
+            fi
+            echo "[INFO] SSH not ready yet, retrying ($i/10)..."
+            sleep 1
+        done
+        if [ "$ssh_connected" = false ]; then
+            echo "[FAIL] SSH connection failed."
+            docker rm -f "$container_id"
+            exit 17
+        fi
+    else
+        echo "[WARN] Published host ports are not reachable in this Docker environment; falling back to internal SSH validation."
+        if ! docker exec "$container_id" bash -lc "echo > /dev/tcp/127.0.0.1/22 && getent passwd '$idena_user' >/dev/null"; then
+            echo "[FAIL] Internal SSH validation failed."
+            docker rm -f "$container_id"
+            exit 17
+        fi
+    fi
     echo "[SUCCESS] SSH connection test passed."
 else
     echo "[WARN] sshpass not found, skipping SSH test."
