@@ -12,7 +12,7 @@ API_URL=$(cat /tools/url.releases.txt)
 # Use -f to make curl fail on HTTP errors (4xx, 5xx)
 # Use -L to follow redirects (good practice, though GitHub API usually doesn't redirect here)
 # Use --show-error to display errors even with -s (silent)
-API_RESPONSE=$(curl -s -L -f --show-error "$API_URL")
+API_RESPONSE=$(curl -s -L -f --show-error -A "idena-node-updater/1.0" "$API_URL")
 CURL_EXIT_CODE=$?
 
 if [ $CURL_EXIT_CODE -ne 0 ]; then

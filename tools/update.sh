@@ -11,7 +11,7 @@ RELEASES_API_URL="$(cat /tools/url.releases.txt)"
 LOCK_DIR="/tmp/idena-node-update.lock"
 WORK_DIR=""
 
-REQUIRED_COMMANDS=(awk chmod curl find grep jq md5sum mkdir mktemp mv rm tar uname wget)
+REQUIRED_COMMANDS=(awk chmod curl find grep jq md5sum mkdir mktemp mv rm tar uname)
 for cmd in "${REQUIRED_COMMANDS[@]}"; do
   command -v "$cmd" >/dev/null 2>&1 || { log "$cmd is required but not installed."; exit 1; }
 done
@@ -51,7 +51,7 @@ fi
 log "Current version: ${currentVersion:-none}"
 
 curl_release() {
-  curl -sS -L -f --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 "$RELEASES_API_URL"
+  curl -sS -L -f -A "idena-node-updater/1.0" --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 "$RELEASES_API_URL"
 }
 
 select_asset_name() {
@@ -85,7 +85,8 @@ download_file() {
   local url="$1"
   local destination="$2"
 
-  wget -q --https-only --timeout=20 --tries=2 --output-document="$destination" "$url"
+  curl -sS -L -f -A "idena-node-updater/1.0" --connect-timeout 10 --max-time 120 --retry 2 \
+    --output "$destination" "$url"
   [ -s "$destination" ] || return 1
 }
 
