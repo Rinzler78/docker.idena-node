@@ -13,7 +13,6 @@ cd "$ROOT"
 
 IMAGE_NAME="${IMAGE_NAME:-idena-node:test-suite}"
 ALLOW_INTERNAL_SSH_FALLBACK="false"
-TEST_PORTS="${TEST_PORTS:-62022:22 44045:40405 19099:9009}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in

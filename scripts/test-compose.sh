@@ -17,6 +17,7 @@ trap cleanup EXIT
 
 log "Testing docker-compose workflow..."
 assert_compose_config
+build_compose_services
 docker compose config >/dev/null
 docker compose up -d
 

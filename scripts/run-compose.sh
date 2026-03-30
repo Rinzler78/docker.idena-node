@@ -10,7 +10,8 @@ cd "$ROOT"
 
 [ -n "${IDENA_USER_ACCOUNT_PASS:-}" ] || fail "Set IDENA_USER_ACCOUNT_PASS before running docker compose."
 
+build_compose_services
+
 log "Starting services from docker-compose.yml..."
 docker compose up -d
 log "Compose run completed."
-

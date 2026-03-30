@@ -10,7 +10,4 @@ cd "$ROOT"
 
 IMAGE_NAME="${IMAGE_NAME:-idena-node:latest}"
 
-log "Building Docker image '$IMAGE_NAME' from Dockerfile..."
-docker build . --tag "$IMAGE_NAME"
-log "Dockerfile build completed."
-
+build_dockerfile_image "$IMAGE_NAME"

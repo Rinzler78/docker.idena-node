@@ -19,6 +19,8 @@ RUN_TIMEOUT="${RUN_TIMEOUT:-86400}"
 
 [ -n "$USER_PASS" ] || fail "Set IDENA_USER_ACCOUNT_PASS before running the container."
 
+build_dockerfile_image "$IMAGE_NAME"
+
 log "Running Docker container '$CONTAINER_NAME' from image '$IMAGE_NAME'..."
 docker run -d \
   --restart unless-stopped \
@@ -32,4 +34,3 @@ docker run -d \
   -e RUN_TIMEOUT="$RUN_TIMEOUT" \
   "$IMAGE_NAME"
 log "Dockerfile run completed."
-
