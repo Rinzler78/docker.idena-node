@@ -37,7 +37,7 @@ fi
 
 # Start ssh server
 log "Starting SSH server..."
-service ssh start
+service dropbear start
 
 # Update the embedded binary after SSH is available so operators can still
 # inspect the container quickly if a remote release check is slow or flaky.

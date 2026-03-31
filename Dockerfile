@@ -36,7 +36,7 @@ ENV PATH=/tools:$PATH
 # Install runtime dependencies and clean up apt cache to reduce image size
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        openssh-server \
+        dropbear \
         curl \
         jq \
         ca-certificates && \
