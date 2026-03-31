@@ -61,7 +61,7 @@ VOLUME ["/datadir"]
 COPY --from=binary-fetcher /bin/idena-node /bin/idena-node
 
 # Copy tools and set permissions
-COPY tools/start.sh tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
+COPY tools/*.* /tools/
 RUN chmod +x /tools/*.sh
 
 # Expose fixed container ports. Host-side ports remain configurable through
