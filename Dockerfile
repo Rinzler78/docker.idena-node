@@ -1,8 +1,7 @@
 # ── Stage 1 : fetch and strip the idena-node binary ──────────────────────────
-FROM ubuntu:22.04 AS binary-fetcher
+FROM debian:bookworm-slim AS binary-fetcher
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
-    apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
         binutils \
         curl \
@@ -19,7 +18,7 @@ RUN chmod +x /tools/*.sh
 RUN /tools/update.sh && strip --strip-all /bin/idena-node
 
 # ── Stage 2 : runtime image ───────────────────────────────────────────────────
-FROM ubuntu:22.04
+FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Arguments for build-time configuration
@@ -33,7 +32,6 @@ ENV PATH=/tools:$PATH
 
 # Install runtime dependencies and clean up apt cache to reduce image size
 RUN apt-get update && \
-    apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
         openssh-server \
         curl \
