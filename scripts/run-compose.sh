@@ -11,7 +11,7 @@ cd "$ROOT"
 if [[ "${1:-}" == "--help" ]]; then
   echo "Usage: $0 [--help]"
   echo ""
-  echo "Build and start idena-node via docker compose."
+  echo "Build (if sources changed) and start idena-node via docker compose."
   echo ""
   echo "Environment variables (all optional, defaults shown):"
   echo "  IDENA_IMAGE_NAME            idena-node:compose-local"
@@ -32,8 +32,8 @@ export IDENA_SSH_HOST_PORT="${IDENA_SSH_HOST_PORT:-60022}"
 export IDENA_P2P_HOST_PORT="${IDENA_P2P_HOST_PORT:-40405}"
 export IDENA_API_HOST_PORT="${IDENA_API_HOST_PORT:-9999}"
 
-build_compose_services
-
+# --build : rebuild only if sources changed (cache-aware).
+# The container is recreated only when the image actually changes.
 log "Starting services from docker-compose.yml..."
-docker compose up -d
+docker compose up -d --build
 log "Compose run completed."
