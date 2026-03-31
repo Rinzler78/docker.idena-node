@@ -17,7 +17,7 @@ RUN mkdir /tools
 COPY tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
 RUN chmod +x /tools/*.sh
 # Download, strip debug symbols, then compress with UPX (-1 = fast, ~44% ratio)
-RUN /tools/update.sh && strip --strip-all /bin/idena-node && upx -1 /bin/idena-node
+RUN /tools/update.sh && strip --strip-all /bin/idena-node && upx -5 /bin/idena-node
 
 # ── Stage 2 : glibc provider (source des .so) ────────────────────────────────
 FROM debian:bookworm-slim AS glibc-provider
