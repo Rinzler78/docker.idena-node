@@ -9,7 +9,7 @@ trap 'log "An error occurred. Exiting." >&2' ERR
 
 # Configurable variables
 CONFIG_FILE="/datadir/config.json"
-REQUIRED_COMMANDS=(getent useradd chpasswd service timeout wget grep sed mv chmod)
+REQUIRED_COMMANDS=(getent useradd chpasswd timeout wget grep sed mv chmod)
 
 # Check required environment variables
 : "${IDENA_USER_ACCOUNT_NAME:?IDENA_USER_ACCOUNT_NAME is not set}"
@@ -35,9 +35,15 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo '{ "IpfsConf": { "Profile": "server" } }' > "$CONFIG_FILE"
 fi
 
-# Start ssh server
+# Start SSH server (dropbear - compatible Debian init.d et Alpine direct)
 log "Starting SSH server..."
-service dropbear start
+if command -v service >/dev/null 2>&1 && [ -f /etc/init.d/dropbear ]; then
+    service dropbear start
+else
+    # Mode Alpine : démarrage direct avec génération automatique des clés hôtes
+    mkdir -p /etc/dropbear
+    dropbear -R -p 22
+fi
 
 # Update the embedded binary after SSH is available so operators can still
 # inspect the container quickly if a remote release check is slow or flaky.

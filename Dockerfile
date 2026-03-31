@@ -7,12 +7,10 @@ RUN apt-get update && \
         wget \
         jq \
         ca-certificates && \
-    update-ca-certificates --fresh && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* \
            /usr/share/doc/* \
-           /usr/share/man/* \
-           /usr/share/locale/*
+           /usr/share/man/*
 
 RUN mkdir /tools
 COPY tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
@@ -20,9 +18,12 @@ RUN chmod +x /tools/*.sh
 # Download the idena-node binary and strip debug symbols to reduce size
 RUN /tools/update.sh && strip --strip-all /bin/idena-node
 
-# ── Stage 2 : runtime image ───────────────────────────────────────────────────
-FROM debian:bookworm-slim
-ENV DEBIAN_FRONTEND=noninteractive
+# ── Stage 2 : glibc provider (source des .so) ────────────────────────────────
+FROM debian:bookworm-slim AS glibc-provider
+
+# ── Stage 3 : runtime Alpine ──────────────────────────────────────────────────
+FROM alpine:latest
+ENV PATH=/tools:$PATH
 
 # Arguments for build-time configuration
 # IMPORTANT: These are default values. Override them at runtime for production.
@@ -31,21 +32,28 @@ ARG IDENA_USER_ACCOUNT_NAME=idenaClient
 ARG IDENA_USER_ACCOUNT_PASS=idenaClientPassword
 ENV IDENA_USER_ACCOUNT_NAME=${IDENA_USER_ACCOUNT_NAME}
 ENV RUN_TIMEOUT=86400
-ENV PATH=/tools:$PATH
 
-# Install runtime dependencies and clean up apt cache to reduce image size
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Installer les dépendances runtime Alpine
+RUN apk add --no-cache \
+        bash \
         dropbear \
         wget \
         jq \
-        ca-certificates && \
-    update-ca-certificates --fresh && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* \
-           /usr/share/doc/* \
+        ca-certificates \
+        shadow && \
+    rm -rf /usr/share/doc/* \
            /usr/share/man/* \
            /usr/share/locale/*
+
+# Copier les librairies glibc depuis Debian (nécessaires pour le binaire idena-node)
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/libc.so.6            /lib/x86_64-linux-gnu/
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/libm.so.6            /lib/x86_64-linux-gnu/
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/libpthread.so.0      /lib/x86_64-linux-gnu/
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/libdl.so.2           /lib/x86_64-linux-gnu/
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/libgcc_s.so.1        /lib/x86_64-linux-gnu/
+COPY --from=glibc-provider /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /lib/x86_64-linux-gnu/
+RUN mkdir -p /lib64 && \
+    ln -sf /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 
 # Create directories for data and tools
 RUN mkdir /datadir && mkdir /tools
@@ -57,7 +65,6 @@ COPY --from=binary-fetcher /bin/idena-node /bin/idena-node
 # Copy tools and set permissions
 COPY tools/*.* /tools/
 RUN chmod +x /tools/*.sh
-
 
 # Expose fixed container ports. Host-side ports remain configurable through
 # docker run or docker compose port mappings.
