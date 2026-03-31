@@ -9,7 +9,10 @@ RUN apt-get update && \
         ca-certificates && \
     update-ca-certificates --fresh && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* \
+           /usr/share/doc/* \
+           /usr/share/man/* \
+           /usr/share/locale/*
 
 RUN mkdir /tools
 COPY tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
@@ -39,7 +42,10 @@ RUN apt-get update && \
         ca-certificates && \
     update-ca-certificates --fresh && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* \
+           /usr/share/doc/* \
+           /usr/share/man/* \
+           /usr/share/locale/*
 
 # Create directories for data and tools
 RUN mkdir /datadir && mkdir /tools
@@ -52,8 +58,6 @@ COPY --from=binary-fetcher /bin/idena-node /bin/idena-node
 COPY tools/*.* /tools/
 RUN chmod +x /tools/*.sh
 
-# Apply system package updates during image build for deterministic startups
-RUN /tools/update-dist.sh
 
 # Expose fixed container ports. Host-side ports remain configurable through
 # docker run or docker compose port mappings.
