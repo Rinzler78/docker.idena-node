@@ -1,9 +1,10 @@
 # ── Stage 1 : fetch and strip the idena-node binary ──────────────────────────
-FROM debian:bookworm-slim AS binary-fetcher
+FROM debian:bullseye-slim AS binary-fetcher
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         binutils \
+        upx-ucl \
         wget \
         jq \
         ca-certificates && \
@@ -15,8 +16,8 @@ RUN apt-get update && \
 RUN mkdir /tools
 COPY tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
 RUN chmod +x /tools/*.sh
-# Download the idena-node binary and strip debug symbols to reduce size
-RUN /tools/update.sh && strip --strip-all /bin/idena-node
+# Download, strip debug symbols, then compress with UPX (-1 = fast, ~44% ratio)
+RUN /tools/update.sh && strip --strip-all /bin/idena-node && upx -1 /bin/idena-node
 
 # ── Stage 2 : glibc provider (source des .so) ────────────────────────────────
 FROM debian:bookworm-slim AS glibc-provider
