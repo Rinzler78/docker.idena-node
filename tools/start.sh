@@ -35,17 +35,14 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo '{ "IpfsConf": { "Profile": "server" } }' > "$CONFIG_FILE"
 fi
 
-# Update distribution
-log "Updating distribution packages..."
-/tools/update-dist.sh
-
-# Update idena node binary
-log "Updating idena-node binary..."
-/tools/update.sh
-
 # Start ssh server
 log "Starting SSH server..."
 service ssh start
+
+# Update the embedded binary after SSH is available so operators can still
+# inspect the container quickly if a remote release check is slow or flaky.
+log "Updating idena-node binary..."
+/tools/update.sh
 
 # Start idena node with timeout
 log "Starting idena-node for ${RUN_TIMEOUT}s..."
