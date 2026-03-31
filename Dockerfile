@@ -39,8 +39,7 @@ RUN apk add --no-cache \
         dropbear \
         wget \
         jq \
-        ca-certificates \
-        shadow && \
+        ca-certificates && \
     rm -rf /usr/share/doc/* \
            /usr/share/man/* \
            /usr/share/locale/*

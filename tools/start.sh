@@ -9,7 +9,7 @@ trap 'log "An error occurred. Exiting." >&2' ERR
 
 # Configurable variables
 CONFIG_FILE="/datadir/config.json"
-REQUIRED_COMMANDS=(getent useradd chpasswd timeout wget grep sed mv chmod)
+REQUIRED_COMMANDS=(getent adduser chpasswd timeout wget grep sed mv chmod)
 
 # Check required environment variables
 : "${IDENA_USER_ACCOUNT_NAME:?IDENA_USER_ACCOUNT_NAME is not set}"
@@ -24,7 +24,7 @@ done
 # Create user for ssh connection if not exists
 if ! getent passwd "$IDENA_USER_ACCOUNT_NAME" > /dev/null; then
     log "Creating user: $IDENA_USER_ACCOUNT_NAME"
-    useradd -ms /bin/bash "$IDENA_USER_ACCOUNT_NAME"
+    adduser -D -s /bin/bash "$IDENA_USER_ACCOUNT_NAME"
     echo "$IDENA_USER_ACCOUNT_NAME:$IDENA_USER_ACCOUNT_PASS" | chpasswd
     # Do NOT add user to sudo group for security reasons
 fi
