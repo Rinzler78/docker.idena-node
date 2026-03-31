@@ -1,0 +1,1 @@
+{"type":"config","name":"Reduce idena-node Docker image size (base image + build optimizations)","metricName":"image_size_mb","metricUnit":"mb","bestDirection":"lower"}
