@@ -26,6 +26,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo '{ "IpfsConf": { "Profile": "server" } }' > "$CONFIG_FILE"
 fi
 
+SUBSCRIPTIONS_FILE="/datadir/subscriptions/subscriptions.json"
+if [ ! -f "$SUBSCRIPTIONS_FILE" ]; then
+    mkdir -p "$(dirname "$SUBSCRIPTIONS_FILE")"
+    echo '[]' > "$SUBSCRIPTIONS_FILE"
+fi
 log "Starting SSH server..."
 if command -v service >/dev/null 2>&1 && [ -f /etc/init.d/dropbear ]; then
     service dropbear start
