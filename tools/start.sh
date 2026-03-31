@@ -27,7 +27,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 SUBSCRIPTIONS_FILE="/datadir/subscriptions/subscriptions.json"
-if [ ! -f "$SUBSCRIPTIONS_FILE" ]; then
+if [ ! -s "$SUBSCRIPTIONS_FILE" ]; then
     mkdir -p "$(dirname "$SUBSCRIPTIONS_FILE")"
     echo '[]' > "$SUBSCRIPTIONS_FILE"
 fi
