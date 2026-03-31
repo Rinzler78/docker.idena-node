@@ -38,7 +38,6 @@ ENV RUN_TIMEOUT=86400
 RUN apk add --no-cache \
         bash \
         dropbear \
-        wget \
         jq \
         ca-certificates && \
     rm -rf /usr/share/doc/* \

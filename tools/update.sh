@@ -50,9 +50,18 @@ else
 fi
 log "Current version: ${currentVersion:-none}"
 
+# wget_release: compatible busybox wget (-U for User-Agent, -T for timeout)
+# Retry loop replaces --tries/--waitretry
 wget_release() {
-  wget -qO- --header="User-Agent: idena-node-updater/1.0" \
-    --connect-timeout=5 --timeout=20 --tries=3 --waitretry=1 "$RELEASES_API_URL"
+  local i output
+  for i in 1 2 3; do
+    if output=$(wget -qO- -U "idena-node-updater/1.0" -T 20 "$RELEASES_API_URL" 2>/dev/null); then
+      echo "$output"
+      return 0
+    fi
+    [ "$i" -lt 3 ] && sleep 1
+  done
+  return 1
 }
 
 select_asset_name() {
@@ -82,13 +91,19 @@ select_asset_name() {
   esac
 }
 
+# download_file: compatible busybox wget
 download_file() {
   local url="$1"
   local destination="$2"
+  local i
 
-  wget -qO "$destination" --header="User-Agent: idena-node-updater/1.0" \
-    --connect-timeout=10 --timeout=120 --tries=3 "$url"
-  [ -s "$destination" ] || return 1
+  for i in 1 2 3; do
+    if wget -qO "$destination" -U "idena-node-updater/1.0" -T 120 "$url" 2>/dev/null; then
+      [ -s "$destination" ] && return 0
+    fi
+    [ "$i" -lt 3 ] && sleep 1
+  done
+  return 1
 }
 
 extract_candidate() {
