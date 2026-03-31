@@ -11,7 +11,7 @@ cd "$ROOT"
 if [[ "${1:-}" == "--help" ]]; then
   echo "Usage: $0 [--help]"
   echo ""
-  echo "Build (if sources changed) and start idena-node via docker compose."
+  echo "Build (only if sources changed) and start idena-node via docker compose."
   echo ""
   echo "Environment variables (all optional, defaults shown):"
   echo "  IDENA_IMAGE_NAME            idena-node:compose-local"
@@ -32,8 +32,29 @@ export IDENA_SSH_HOST_PORT="${IDENA_SSH_HOST_PORT:-60022}"
 export IDENA_P2P_HOST_PORT="${IDENA_P2P_HOST_PORT:-40405}"
 export IDENA_API_HOST_PORT="${IDENA_API_HOST_PORT:-9999}"
 
-# --build : rebuild only if sources changed (cache-aware).
-# The container is recreated only when the image actually changes.
+# Files that affect the Docker image build (Dockerfile + build context sources).
+# Hash stored in .build-hash to detect changes between runs.
+BUILD_HASH_FILE=".build-hash"
+
+compute_build_hash() {
+  find Dockerfile tools -type f | sort | xargs sha256sum | sha256sum | cut -d' ' -f1
+}
+
+current_hash="$(compute_build_hash)"
+stored_hash="$(cat "$BUILD_HASH_FILE" 2>/dev/null || echo "")"
+
 log "Starting services from docker-compose.yml..."
-docker compose up -d --build
+
+if [ "$current_hash" != "$stored_hash" ]; then
+  log "Sources changed — rebuilding image..."
+  docker compose build
+  echo "$current_hash" > "$BUILD_HASH_FILE"
+  # Image may have changed: recreate container if needed
+  docker compose up -d
+else
+  log "Sources unchanged — skipping build."
+  # No rebuild: start/keep container without touching the image
+  docker compose up -d --no-recreate
+fi
+
 log "Compose run completed."

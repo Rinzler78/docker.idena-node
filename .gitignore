@@ -1,3 +1,4 @@
 .tmp/
 new-idena-node
 version
+.build-hash
