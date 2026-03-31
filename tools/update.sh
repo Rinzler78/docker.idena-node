@@ -11,7 +11,7 @@ RELEASES_API_URL="$(cat /tools/url.releases.txt)"
 LOCK_DIR="/tmp/idena-node-update.lock"
 WORK_DIR=""
 
-REQUIRED_COMMANDS=(awk chmod curl find grep jq md5sum mkdir mktemp mv rm tar uname)
+REQUIRED_COMMANDS=(awk chmod wget find grep jq md5sum mkdir mktemp mv rm tar uname)
 for cmd in "${REQUIRED_COMMANDS[@]}"; do
   command -v "$cmd" >/dev/null 2>&1 || { log "$cmd is required but not installed."; exit 1; }
 done
@@ -50,8 +50,9 @@ else
 fi
 log "Current version: ${currentVersion:-none}"
 
-curl_release() {
-  curl -sS -L -f -A "idena-node-updater/1.0" --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 "$RELEASES_API_URL"
+wget_release() {
+  wget -qO- --header="User-Agent: idena-node-updater/1.0" \
+    --connect-timeout=5 --timeout=20 --tries=3 --waitretry=1 "$RELEASES_API_URL"
 }
 
 select_asset_name() {
@@ -85,8 +86,8 @@ download_file() {
   local url="$1"
   local destination="$2"
 
-  curl -sS -L -f -A "idena-node-updater/1.0" --connect-timeout 10 --max-time 120 --retry 2 \
-    --output "$destination" "$url"
+  wget -qO "$destination" --header="User-Agent: idena-node-updater/1.0" \
+    --connect-timeout=10 --timeout=120 --tries=3 "$url"
   [ -s "$destination" ] || return 1
 }
 
@@ -125,7 +126,7 @@ verify_md5() {
   [ "$actual_md5" = "$expected_md5" ]
 }
 
-if release_json="$(curl_release)"; then
+if release_json="$(wget_release)"; then
   remoteVersion="$(echo "$release_json" | jq -r '.tag_name | ltrimstr("v")')"
 else
   if [ -n "$currentVersion" ]; then

@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         binutils \
-        curl \
+        wget \
         jq \
         ca-certificates && \
     update-ca-certificates --fresh && \
@@ -37,7 +37,7 @@ ENV PATH=/tools:$PATH
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dropbear \
-        curl \
+        wget \
         jq \
         ca-certificates && \
     update-ca-certificates --fresh && \

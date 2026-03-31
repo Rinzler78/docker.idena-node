@@ -9,7 +9,7 @@ trap 'log "An error occurred. Exiting." >&2' ERR
 
 # Configurable variables
 CONFIG_FILE="/datadir/config.json"
-REQUIRED_COMMANDS=(getent useradd chpasswd service timeout curl grep sed mv chmod)
+REQUIRED_COMMANDS=(getent useradd chpasswd service timeout wget grep sed mv chmod)
 
 # Check required environment variables
 : "${IDENA_USER_ACCOUNT_NAME:?IDENA_USER_ACCOUNT_NAME is not set}"
