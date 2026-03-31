@@ -110,8 +110,8 @@ assert_compose_config() {
   printf '%s\n' "$default_config" | grep -q 'type: volume' || fail "Default compose storage is not a Docker volume."
   printf '%s\n' "$default_config" | grep -q 'source: idena-node-data' || fail "Default compose volume name is not idena-node-data."
   printf '%s\n' "$default_config" | grep -q 'test:' || fail "Compose healthcheck is missing."
-  printf '%s\n' "$default_config" | grep -q '/dev/tcp/localhost/22' || fail "Compose healthcheck does not probe SSH on port 22."
-  printf '%s\n' "$default_config" | grep -q '/dev/tcp/localhost/9009' || fail "Compose healthcheck does not probe the API port 9009."
+  printf '%s\n' "$default_config" | grep -qE '/dev/tcp/localhost/22|127\.0\.0\.1.*22' || fail "Compose healthcheck does not probe SSH on port 22."
+  printf '%s\n' "$default_config" | grep -qE '/dev/tcp/localhost/9009|127\.0\.0\.1.*9009' || fail "Compose healthcheck does not probe the API port 9009."
 
   log "Validating docker-compose port overrides..."
   local override_config
@@ -167,14 +167,14 @@ assert_image_contract() {
 
     local version=""
     local remote_exit=0
-    version=$(docker exec "$container_id" bash -lc 'cd / && /tools/version.remote.sh' 2>/dev/null) || remote_exit=$?
+    version=$(docker exec "$container_id" sh -c '/tools/version.remote.sh' 2>/dev/null) || remote_exit=$?
     if [ "$remote_exit" -eq 0 ]; then
       printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail "version.remote.sh did not return a valid semver from /."
     else
       log "WARNING: version.remote.sh exited non-zero (GitHub API may be rate-limited). Skipping remote version assertion."
     fi
 
-    docker exec "$container_id" bash -lc 'echo > /dev/tcp/127.0.0.1/22' >/dev/null 2>&1 || fail "SSH port 22 is not reachable inside the container."
+    docker exec "$container_id" sh -c 'nc -z 127.0.0.1 22' >/dev/null 2>&1 || fail "SSH port 22 is not reachable inside the container."
 
     log "Image contract tests passed."
   )
@@ -290,7 +290,7 @@ run_quick_dockerfile_test() {
         fail "Published host SSH port $ssh_port is not reachable."
       fi
       echo "[WARN] Published host ports are not reachable in this Docker environment; falling back to internal SSH validation."
-      docker exec "$container_id" bash -lc "echo > /dev/tcp/127.0.0.1/22 && getent passwd '$idena_user' >/dev/null" >/dev/null 2>&1 || fail "Internal SSH validation failed."
+      docker exec "$container_id" sh -c "nc -z 127.0.0.1 22 && getent passwd '$idena_user' >/dev/null" >/dev/null 2>&1 || fail "Internal SSH validation failed."
     fi
     echo "[SUCCESS] SSH connection test passed."
 
@@ -331,7 +331,7 @@ run_update_fallback_test() {
     [[ $before_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Initial version is invalid in fallback test: $before_version"
 
     echo "[INFO] Forcing release API failure and re-running update.sh..."
-    docker exec "$container_id" bash -lc "printf '%s\n' 'http://127.0.0.1:9/releases/latest' > /tools/url.releases.txt && /tools/update.sh"
+    docker exec "$container_id" sh -c "printf '%s\n' 'http://127.0.0.1:9/releases/latest' > /tools/url.releases.txt && /tools/update.sh"
 
     after_version=$(docker exec "$container_id" /tools/version.locale.sh)
     [ "$before_version" = "$after_version" ] || fail "Fallback update changed the installed version ($before_version -> $after_version)."

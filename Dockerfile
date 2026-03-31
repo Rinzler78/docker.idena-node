@@ -36,7 +36,6 @@ ENV RUN_TIMEOUT=86400
 
 # Installer les dépendances runtime Alpine
 RUN apk add --no-cache \
-        bash \
         dropbear \
         jq \
         ca-certificates && \
@@ -70,6 +69,6 @@ RUN chmod +x /tools/*.sh
 EXPOSE 22 40405 9009
 
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
-  CMD bash -c '</dev/tcp/localhost/22 && </dev/tcp/localhost/9009'
+  CMD sh -c 'nc -w1 127.0.0.1 22 </dev/null >/dev/null 2>&1 && nc -w1 127.0.0.1 9009 </dev/null >/dev/null 2>&1'
 
 CMD ["/tools/start.sh"]

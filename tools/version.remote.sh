@@ -1,11 +1,8 @@
-#!/bin/bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-trap 'echo "An error occurred in version.remote.sh. Exiting." >&2' ERR
 
 API_URL=$(cat /tools/url.releases.txt)
-
-# Busybox wget: -U for User-Agent, -T for timeout, -qO- for stdout
 API_RESPONSE=$(wget -qO- -U "idena-node-updater/1.0" -T 20 "$API_URL" 2>/dev/null)
 
 if [ -z "$API_RESPONSE" ]; then

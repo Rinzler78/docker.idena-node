@@ -14,7 +14,7 @@ services:
       - "${IDENA_P2P_HOST_PORT:-40405}:40405"
       - "${IDENA_API_HOST_PORT:-9999}:9009"
     healthcheck:
-      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/22 && </dev/tcp/localhost/9009"]
+      test: ["CMD", "sh", "-c", "nc -w1 127.0.0.1 22 </dev/null >/dev/null 2>&1 && nc -w1 127.0.0.1 9009 </dev/null >/dev/null 2>&1"]
       interval: 5s
       timeout: 3s
       start_period: 10s
