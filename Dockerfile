@@ -6,7 +6,6 @@ RUN apt-get update && \
         binutils \
         upx-ucl \
         wget \
-        jq \
         ca-certificates && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* \
@@ -37,7 +36,6 @@ ENV RUN_TIMEOUT=86400
 # Installer les dépendances runtime Alpine
 RUN apk add --no-cache \
         dropbear \
-        jq \
         ca-certificates && \
     rm -rf /usr/share/doc/* \
            /usr/share/man/* \

@@ -9,7 +9,7 @@ RELEASES_API_URL="$(cat /tools/url.releases.txt)"
 LOCK_DIR="/tmp/idena-node-update.lock"
 WORK_DIR=""
 
-REQUIRED_COMMANDS="awk chmod wget find grep jq md5sum mkdir mktemp mv rm tar uname"
+REQUIRED_COMMANDS="awk chmod wget find grep sed md5sum mkdir mktemp mv rm tar uname"
 for cmd in $REQUIRED_COMMANDS; do
   command -v "$cmd" >/dev/null 2>&1 || { log "$cmd is required but not installed."; exit 1; }
 done
@@ -48,6 +48,8 @@ else
 fi
 log "Current version: ${currentVersion:-none}"
 
+# Fetch the release JSON — busybox wget: -U for User-Agent, -T for timeout
+# Retry loop replaces --tries/--waitretry
 wget_release() {
   local i output
   for i in 1 2 3; do
@@ -60,24 +62,25 @@ wget_release() {
   return 1
 }
 
-select_asset_name() {
+# Parse tag_name from release JSON (no jq needed)
+parse_version() {
+  echo "$1" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4 | sed 's/^v//'
+}
+
+# Get the download URL for the binary matching the current architecture.
+# The URL itself ends with the asset filename so no JSON correlation needed.
+select_asset_url() {
   local release_json="$1"
   local machine
   machine="$(uname -m)"
   case "$machine" in
     x86_64|amd64)
-      echo "$release_json" | jq -r '
-        .assets[]?
-        | select(.name? and (.name | test("^idena-node-linux-[0-9]+\\.[0-9]+\\.[0-9]+$")))
-        | .name
-      ' | head -n1
+      echo "$release_json" | grep -o '"browser_download_url":"[^"]*"' | cut -d'"' -f4 | \
+        grep -E '/idena-node-linux-[0-9]+\.[0-9]+\.[0-9]+$' | head -1
       ;;
     aarch64|arm64)
-      echo "$release_json" | jq -r '
-        .assets[]?
-        | select(.name? and (.name | test("^idena-node-linux-aarch64-[0-9]+\\.[0-9]+\\.[0-9]+\\.tar\\.gz$")))
-        | .name
-      ' | head -n1
+      echo "$release_json" | grep -o '"browser_download_url":"[^"]*"' | cut -d'"' -f4 | \
+        grep -E '/idena-node-linux-aarch64-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$' | head -1
       ;;
     *)
       log "Unsupported architecture: $machine"
@@ -131,7 +134,7 @@ verify_md5() {
 }
 
 if release_json="$(wget_release)"; then
-  remoteVersion="$(echo "$release_json" | jq -r '.tag_name | ltrimstr("v")')"
+  remoteVersion="$(parse_version "$release_json")"
 else
   if [ -n "$currentVersion" ]; then
     log "Remote version lookup failed. Keeping current version: $currentVersion"
@@ -157,8 +160,8 @@ if [ "$remoteVersion" = "$currentVersion" ]; then
   exit 0
 fi
 
-asset_name="$(select_asset_name "$release_json")"
-if [ -z "$asset_name" ]; then
+asset_url="$(select_asset_url "$release_json")"
+if [ -z "$asset_url" ]; then
   if [ -n "$currentVersion" ]; then
     log "No compatible release asset found. Keeping current version: $currentVersion"
     exit 0
@@ -167,21 +170,16 @@ if [ -z "$asset_name" ]; then
   exit 1
 fi
 
-asset_url="$(echo "$release_json" | jq -r --arg name "$asset_name" '.assets[]? | select(.name == $name) | .browser_download_url' | head -n1)"
-checksum_name="${asset_name}.md5"
-checksum_url="$(echo "$release_json" | jq -r --arg name "$checksum_name" '.assets[]? | select(.name == $name) | .browser_download_url' | head -n1)"
+# Derive asset name from URL (basename)
+asset_name="${asset_url##*/}"
+log "Remote version: $remoteVersion, asset: $asset_name"
 
-if [ -z "$asset_url" ] || [ "$asset_url" = "null" ]; then
-  if [ -n "$currentVersion" ]; then
-    log "Compatible asset URL is missing. Keeping current version: $currentVersion"
-    exit 0
-  fi
-  log "ERROR: Unable to resolve the download URL."
-  exit 1
-fi
+# Checksum URL: same base with .md5 suffix
+checksum_url="$(echo "$release_json" | grep -o '"browser_download_url":"[^"]*"' | \
+  cut -d'"' -f4 | grep "${asset_name}\.md5$" | head -1)"
 
 asset_path="$WORK_DIR/$asset_name"
-checksum_path="$WORK_DIR/$checksum_name"
+checksum_path="$WORK_DIR/${asset_name}.md5"
 
 log "Downloading idena-node $remoteVersion ..."
 if ! download_file "$asset_url" "$asset_path"; then
@@ -193,7 +191,7 @@ if ! download_file "$asset_url" "$asset_path"; then
   exit 1
 fi
 
-if [ -n "$checksum_url" ] && [ "$checksum_url" != "null" ]; then
+if [ -n "$checksum_url" ]; then
   log "Verifying checksum..."
   if ! download_file "$checksum_url" "$checksum_path" || ! verify_md5 "$asset_path" "$checksum_path"; then
     if [ -n "$currentVersion" ]; then
