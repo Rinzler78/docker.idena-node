@@ -16,7 +16,7 @@ RUN apt-get update && \
 RUN mkdir /tools
 COPY tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
 RUN chmod +x /tools/*.sh
-# Download, strip debug symbols, then compress with UPX (-1 = fast, ~44% ratio)
+# Download, strip debug symbols, then compress with UPX (-7, ~37% ratio, 17s build)
 RUN /tools/update.sh && strip --strip-all /bin/idena-node && upx -7 /bin/idena-node
 
 # ── Stage 2 : glibc provider (source des .so) ────────────────────────────────
@@ -61,7 +61,7 @@ VOLUME ["/datadir"]
 COPY --from=binary-fetcher /bin/idena-node /bin/idena-node
 
 # Copy tools and set permissions
-COPY tools/*.* /tools/
+COPY tools/start.sh tools/update.sh tools/version.locale.sh tools/version.remote.sh tools/url.releases.txt /tools/
 RUN chmod +x /tools/*.sh
 
 # Expose fixed container ports. Host-side ports remain configurable through
